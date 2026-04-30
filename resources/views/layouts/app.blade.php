@@ -1,44 +1,40 @@
 <!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $title ?? 'GestQuartel' }}</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="min-h-screen bg-slate-100 text-slate-900">
-    @auth
-        <div class="min-h-screen lg:flex">
-            <aside class="bg-slate-950 p-6 text-white lg:w-72">
-                <div class="mb-8">
-                    <p class="text-sm uppercase tracking-[0.35em] text-red-300">Quartel</p>
-                    <h1 class="mt-2 text-2xl font-bold">GestQuartel</h1>
-                </div>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
 
-                <nav class="space-y-2">
-                    <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">Dashboard</a>
-                    <a class="nav-link {{ request()->routeIs('people.*') ? 'active' : '' }}" href="{{ route('people.index') }}">Pessoas</a>
-                    <a class="nav-link {{ request()->routeIs('equipment.*') ? 'active' : '' }}" href="{{ route('equipment.index') }}">Equipamentos</a>
-                    <a class="nav-link {{ request()->routeIs('assignments.*') ? 'active' : '' }}" href="{{ route('assignments.index') }}">Atribuições</a>
-                </nav>
+        <title>{{ $title ?? config('app.name', 'Laravel') }}</title>
 
-                <form class="mt-8" method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button class="w-full rounded-xl bg-white/10 px-4 py-3 text-left text-sm font-semibold text-slate-100 hover:bg-white/20">
-                        Sair
-                    </button>
-                </form>
-            </aside>
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-            <main class="flex-1 p-6 lg:p-10">
-                @include('layouts.partials.flash')
-                @yield('content')
+        <!-- Scripts -->
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    </head>
+    <body class="font-sans antialiased">
+        <div class="min-h-screen bg-gray-100">
+            @include('layouts.navigation')
+
+            <!-- Page Heading -->
+            @isset($header)
+                <header class="bg-white shadow">
+                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                        {{ $header }}
+                    </div>
+                </header>
+            @endisset
+
+            <!-- Page Content -->
+            <main>
+                @isset($slot)
+                    {{ $slot }}
+                @else
+                    @yield('content')
+                @endisset
             </main>
         </div>
-    @else
-        <main class="flex min-h-screen items-center justify-center bg-slate-950 p-6">
-            @yield('content')
-        </main>
-    @endauth
-</body>
+    </body>
 </html>

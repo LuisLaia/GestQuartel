@@ -1,31 +1,43 @@
-@extends('layouts.app', ['title' => 'Login - GestQuartel'])
+<x-guest-layout>
+    <x-auth-session-status class="mb-4" :status="session('status')" />
 
-@section('content')
-    <section class="w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl">
-        <div class="mb-8 text-center">
-            <p class="text-sm font-semibold uppercase tracking-[0.35em] text-red-600">GestQuartel</p>
-            <h1 class="mt-3 text-3xl font-bold text-slate-950">Entrar no quartel</h1>
-            <p class="mt-2 text-sm text-slate-500">Autentique-se para gerir pessoas, equipamentos e stock.</p>
+    @if ($errors->any())
+        <div class="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            Credenciais invalidas. Verifica o email e a password.
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('login.store') }}">
+        @csrf
+
+        <div>
+            <x-input-label for="email" :value="'Email'" />
+            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
+            <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
-        <form method="POST" action="{{ route('login.store') }}" class="space-y-5">
-            @csrf
-            <label class="block">
-                <span class="label">Email</span>
-                <input class="input" type="email" name="email" value="{{ old('email') }}" required autofocus>
-            </label>
+        <div class="mt-4">
+            <x-input-label for="password" :value="'Password'" />
 
-            <label class="block">
-                <span class="label">Password</span>
-                <input class="input" type="password" name="password" required>
-            </label>
+            <x-text-input id="password" class="block mt-1 w-full"
+                            type="password"
+                            name="password"
+                            required autocomplete="current-password" />
 
-            <label class="flex items-center gap-2 text-sm text-slate-600">
-                <input type="checkbox" name="remember" value="1" class="rounded border-slate-300">
-                Manter sessão iniciada
-            </label>
+            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        </div>
 
-            <button class="btn-primary w-full">Entrar</button>
-        </form>
-    </section>
-@endsection
+        <div class="block mt-4">
+            <label for="remember_me" class="inline-flex items-center">
+                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
+                <span class="ms-2 text-sm text-gray-600">Lembrar-me</span>
+            </label>
+        </div>
+
+        <div class="flex items-center justify-end mt-4">
+            <x-primary-button class="ms-3 text-black shadow-lg">
+                Entrar
+            </x-primary-button>
+        </div>
+    </form>
+</x-guest-layout>
