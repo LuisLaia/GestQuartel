@@ -40,5 +40,5 @@
 
 <div class="mt-6 flex gap-3">
     <button class="btn-primary">Guardar</button>
-    <a class="btn-secondary" href="{{ route('people.index') }}">Cancelar</a>
+    <a class="btn-secondary" href="{{ route('personnel.index') }}">Cancelar</a>
 </div>

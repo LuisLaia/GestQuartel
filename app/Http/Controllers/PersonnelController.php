@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
-class PersonController extends Controller
+class PersonnelController extends Controller
 {
     public function index(Request $request): View
     {
@@ -37,12 +37,12 @@ class PersonController extends Controller
     {
         Person::create($this->validatedData($request));
 
-        return redirect()->route('people.index')->with('status', 'Pessoa criada com sucesso.');
+        return redirect()->route('personnel.index')->with('status', 'Pessoa criada com sucesso.');
     }
 
     public function show(Person $person): View
     {
-        $person->load(['assignments.equipment']);
+        $person->load(['assignments.uniformItem']);
 
         return view('people.show', compact('person'));
     }
@@ -56,20 +56,20 @@ class PersonController extends Controller
     {
         $person->update($this->validatedData($request, $person));
 
-        return redirect()->route('people.show', $person)->with('status', 'Pessoa atualizada com sucesso.');
+        return redirect()->route('personnel.show', $person)->with('status', 'Pessoa atualizada com sucesso.');
     }
 
     public function destroy(Person $person): RedirectResponse
     {
         if ($person->assignments()->whereNull('returned_at')->exists()) {
             return back()->withErrors([
-                'person' => 'Não é possível remover uma pessoa com equipamento ainda atribuído.',
+                'person' => 'Nao e possivel remover uma pessoa com fardamento ainda atribuido.',
             ]);
         }
 
         $person->delete();
 
-        return redirect()->route('people.index')->with('status', 'Pessoa removida com sucesso.');
+        return redirect()->route('personnel.index')->with('status', 'Pessoa removida com sucesso.');
     }
 
     private function validatedData(Request $request, ?Person $person = null): array

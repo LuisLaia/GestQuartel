@@ -7,7 +7,7 @@
             <h2 class="page-title">{{ $person->name }}</h2>
         </div>
     </div>
-    <form class="card" method="POST" action="{{ route('people.update', $person) }}">
+    <form class="card" method="POST" action="{{ route('personnel.update', $person) }}">
         @method('PUT')
         @include('people.form')
     </form>

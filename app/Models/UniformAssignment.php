@@ -6,13 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class EquipmentAssignment extends Model
+class UniformAssignment extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'person_id',
-        'equipment_id',
+        'uniform_item_id',
         'quantity',
         'assigned_at',
         'returned_at',
@@ -32,9 +32,9 @@ class EquipmentAssignment extends Model
         return $this->belongsTo(Person::class);
     }
 
-    public function equipment(): BelongsTo
+    public function uniformItem(): BelongsTo
     {
-        return $this->belongsTo(Equipment::class);
+        return $this->belongsTo(UniformItem::class);
     }
 
     public function isActive(): bool

@@ -7,7 +7,7 @@
             <h2 class="page-title">Adicionar pessoa</h2>
         </div>
     </div>
-    <form class="card" method="POST" action="{{ route('people.store') }}">
+    <form class="card" method="POST" action="{{ route('personnel.store') }}">
         @include('people.form')
     </form>
 @endsection

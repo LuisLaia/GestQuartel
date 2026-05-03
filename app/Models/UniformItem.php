@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Equipment extends Model
+class UniformItem extends Model
 {
     use HasFactory;
 
-    protected $table = 'equipment';
+    protected $table = 'uniform_items';
 
     protected $fillable = [
         'name',
@@ -25,7 +25,7 @@ class Equipment extends Model
 
     public function assignments(): HasMany
     {
-        return $this->hasMany(EquipmentAssignment::class);
+        return $this->hasMany(UniformAssignment::class);
     }
 
     public function isLowStock(): bool

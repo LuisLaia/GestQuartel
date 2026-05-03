@@ -2,27 +2,36 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Equipment;
-use App\Models\EquipmentAssignment;
 use App\Models\Person;
+use App\Models\UniformAssignment;
+use App\Models\UniformItem;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
     public function __invoke(): View
     {
+        $peopleCount = Person::count();
+        $activePeopleCount = Person::where('status', 'ativo')->count();
+
         return view('dashboard.index', [
-            'peopleCount' => Person::count(),
-            'activePeopleCount' => Person::where('status', 'ativo')->count(),
-            'equipmentCount' => Equipment::count(),
-            'lowStockCount' => Equipment::whereColumn('available_quantity', '<=', 'minimum_quantity')->count(),
-            'activeAssignmentsCount' => EquipmentAssignment::whereNull('returned_at')->count(),
-            'recentAssignments' => EquipmentAssignment::with(['person', 'equipment'])
+            'peopleCount' => $peopleCount,
+            'activePeopleCount' => $activePeopleCount,
+
+            'uniformItemCount' => UniformItem::count(),
+
+            'lowStockCount' => UniformItem::whereColumn('available_quantity', '<=', 'minimum_quantity')->count(),
+
+            'activeAssignmentsCount' => UniformAssignment::whereNull('returned_at')->count(),
+
+            'recentAssignments' => UniformAssignment::with(['person', 'uniformItem'])
                 ->latest('assigned_at')
-                ->latest()
                 ->limit(6)
                 ->get(),
-            'lowStockEquipment' => Equipment::whereColumn('available_quantity', '<=', 'minimum_quantity')
+
+            'recentPersonnel' => Person::latest()->limit(5)->get(),
+
+            'lowStockUniformItems' => UniformItem::whereColumn('available_quantity', '<=', 'minimum_quantity')
                 ->orderBy('available_quantity')
                 ->limit(6)
                 ->get(),

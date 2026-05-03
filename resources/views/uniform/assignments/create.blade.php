@@ -1,14 +1,14 @@
-@extends('layouts.app', ['title' => 'Nova atribuição - GestQuartel'])
+@extends('layouts.app', ['title' => 'Nova atribuicao - GestQuartel'])
 
 @section('content')
     <div class="page-header">
         <div>
-            <p class="eyebrow">Saída de stock</p>
-            <h2 class="page-title">Nova atribuição</h2>
+            <p class="eyebrow">Saida de stock</p>
+            <h2 class="page-title">Nova atribuicao</h2>
         </div>
     </div>
 
-    <form class="card" method="POST" action="{{ route('assignments.store') }}">
+    <form class="card" method="POST" action="{{ route('uniform.assignments.store') }}">
         @csrf
         <div class="grid gap-5 md:grid-cols-2">
             <label class="block">
@@ -21,12 +21,12 @@
                 </select>
             </label>
             <label class="block">
-                <span class="label">Equipamento</span>
-                <select class="input" name="equipment_id" required>
-                    <option value="">Selecionar equipamento</option>
-                    @foreach ($equipment as $item)
-                        <option value="{{ $item->id }}" @selected(old('equipment_id') == $item->id)>
-                            {{ $item->name }} — {{ $item->available_quantity }} disponível
+                <span class="label">Peca de fardamento</span>
+                <select class="input" name="uniform_item_id" required>
+                    <option value="">Selecionar peca</option>
+                    @foreach ($uniformItems as $item)
+                        <option value="{{ $item->id }}" @selected(old('uniform_item_id') == $item->id)>
+                            {{ $item->name }} - {{ $item->available_quantity }} disponivel
                         </option>
                     @endforeach
                 </select>
@@ -36,7 +36,7 @@
                 <input class="input" type="number" min="1" name="quantity" value="{{ old('quantity', 1) }}" required>
             </label>
             <label class="block">
-                <span class="label">Data de atribuição</span>
+                <span class="label">Data de atribuicao</span>
                 <input class="input" type="date" name="assigned_at" value="{{ old('assigned_at', now()->toDateString()) }}" required>
             </label>
             <label class="block md:col-span-2">
@@ -47,7 +47,7 @@
 
         <div class="mt-6 flex gap-3">
             <button class="btn-primary">Atribuir e baixar stock</button>
-            <a class="btn-secondary" href="{{ route('assignments.index') }}">Cancelar</a>
+            <a class="btn-secondary" href="{{ route('uniform.assignments.index') }}">Cancelar</a>
         </div>
     </form>
 @endsection

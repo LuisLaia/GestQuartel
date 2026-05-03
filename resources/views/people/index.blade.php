@@ -6,7 +6,7 @@
             <p class="eyebrow">Operacionais e equipa</p>
             <h2 class="page-title">Pessoas</h2>
         </div>
-        <a class="btn-primary" href="{{ route('people.create') }}">Adicionar pessoa</a>
+        <a class="btn-primary" href="{{ route('personnel.create') }}">Adicionar pessoa</a>
     </div>
 
     <form class="mb-5 flex gap-3" method="GET">
@@ -34,7 +34,7 @@
                         <td>{{ $person->rank ?: '—' }}</td>
                         <td>{{ $person->phone ?: $person->email ?: '—' }}</td>
                         <td><span class="badge">{{ ucfirst($person->status) }}</span></td>
-                        <td class="text-right"><a class="link" href="{{ route('people.show', $person) }}">Abrir</a></td>
+                        <td class="text-right"><a class="link" href="{{ route('personnel.show', $person) }}">Abrir</a></td>
                     </tr>
                 @empty
                     <tr><td colspan="6" class="empty">Sem pessoas registadas.</td></tr>

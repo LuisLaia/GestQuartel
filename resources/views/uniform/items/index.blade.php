@@ -1,12 +1,12 @@
-@extends('layouts.app', ['title' => 'Equipamentos - GestQuartel'])
+@extends('layouts.app', ['title' => 'Fardamento - GestQuartel'])
 
 @section('content')
     <div class="page-header">
         <div>
-            <p class="eyebrow">Inventário</p>
-            <h2 class="page-title">Equipamentos</h2>
+            <p class="eyebrow">Inventario</p>
+            <h2 class="page-title">Fardamento</h2>
         </div>
-        <a class="btn-primary" href="{{ route('equipment.create') }}">Adicionar equipamento</a>
+        <a class="btn-primary" href="{{ route('uniform.items.create') }}">Adicionar peca</a>
     </div>
 
     <form class="mb-5 flex gap-3" method="GET">
@@ -18,34 +18,34 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>Equipamento</th>
+                    <th>Peca</th>
                     <th>Categoria</th>
                     <th>Tamanho</th>
-                    <th>Disponível</th>
+                    <th>Disponivel</th>
                     <th>Total</th>
                     <th>Estado</th>
                     <th></th>
                 </tr>
             </thead>
             <tbody>
-                @forelse ($equipment as $item)
+                @forelse ($uniformItems as $item)
                     <tr>
                         <td class="font-semibold">{{ $item->name }}</td>
-                        <td>{{ $item->category ?: '—' }}</td>
-                        <td>{{ $item->size ?: '—' }}</td>
+                        <td>{{ $item->category ?: '-' }}</td>
+                        <td>{{ $item->size ?: '-' }}</td>
                         <td>
                             <span class="badge {{ $item->isLowStock() ? 'danger' : '' }}">{{ $item->available_quantity }}</span>
                         </td>
                         <td>{{ $item->total_quantity }}</td>
                         <td>{{ ucfirst($item->condition) }}</td>
-                        <td class="text-right"><a class="link" href="{{ route('equipment.show', $item) }}">Abrir</a></td>
+                        <td class="text-right"><a class="link" href="{{ route('uniform.items.show', $item) }}">Abrir</a></td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" class="empty">Sem equipamentos registados.</td></tr>
+                    <tr><td colspan="7" class="empty">Sem fardamento registado.</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 
-    <div class="mt-5">{{ $equipment->links() }}</div>
+    <div class="mt-5">{{ $uniformItems->links() }}</div>
 @endsection

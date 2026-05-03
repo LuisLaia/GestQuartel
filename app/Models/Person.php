@@ -30,6 +30,6 @@ class Person extends Model
 
     public function assignments(): HasMany
     {
-        return $this->hasMany(EquipmentAssignment::class);
+        return $this->hasMany(UniformAssignment::class);
     }
 }

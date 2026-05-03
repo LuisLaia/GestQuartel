@@ -1,58 +1,101 @@
-@extends('layouts.app', ['title' => 'Dashboard - GestQuartel'])
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="text-xl font-semibold text-slate-800">
+            Painel de Controlo
+        </h2>
+    </x-slot>
 
-@section('content')
-    <div class="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
-        <div>
-            <p class="eyebrow">Visão geral</p>
-            <h2 class="page-title">Dashboard</h2>
-        </div>
-        <a href="{{ route('assignments.create') }}" class="btn-primary">Nova atribuição</a>
-    </div>
+    <div class="p-6 space-y-6">
 
-    <section class="grid gap-5 md:grid-cols-2 xl:grid-cols-5">
-        <x-stat-card label="Pessoas" :value="$peopleCount" />
-        <x-stat-card label="Pessoas ativas" :value="$activePeopleCount" />
-        <x-stat-card label="Equipamentos" :value="$equipmentCount" />
-        <x-stat-card label="Atribuições ativas" :value="$activeAssignmentsCount" />
-        <x-stat-card label="Stock baixo" :value="$lowStockCount" tone="danger" />
-    </section>
-
-    <section class="mt-8 grid gap-6 xl:grid-cols-2">
-        <div class="card">
-            <div class="mb-4 flex items-center justify-between">
-                <h3 class="section-title">Últimas atribuições</h3>
-                <a class="text-sm font-semibold text-red-700" href="{{ route('assignments.index') }}">Ver todas</a>
+        {{-- KPIs --}}
+        <div class="grid grid-cols-4 gap-6">
+            <div class="card bg-rose-600 text-white">
+                <p>Pessoal Ativo</p>
+                <h2 class="text-3xl font-bold">{{ $activePeopleCount }}</h2>
             </div>
-            <div class="space-y-3">
-                @forelse ($recentAssignments as $assignment)
-                    <div class="rounded-2xl border border-slate-200 p-4">
-                        <p class="font-semibold">{{ $assignment->equipment->name }} × {{ $assignment->quantity }}</p>
-                        <p class="text-sm text-slate-500">{{ $assignment->person->name }} · {{ $assignment->assigned_at->format('d/m/Y') }}</p>
-                    </div>
-                @empty
-                    <p class="empty">Ainda não existem atribuições.</p>
-                @endforelse
+
+            <div class="card">
+                <p>Pessoal Inativo</p>
+                <h2 class="text-3xl font-bold">
+                    {{ $peopleCount - $activePeopleCount }}
+                </h2>
+            </div>
+
+            <div class="card">
+                <p>Fardamento</p>
+                <h2 class="text-3xl font-bold">{{ $uniformItemCount }}</h2>
+            </div>
+
+            <div class="card">
+                <p>Atribuições Ativas</p>
+                <h2 class="text-3xl font-bold">{{ $activeAssignmentsCount }}</h2>
             </div>
         </div>
 
+        {{-- STOCK BAIXO --}}
         <div class="card">
-            <div class="mb-4 flex items-center justify-between">
-                <h3 class="section-title">Equipamento com stock baixo</h3>
-                <a class="text-sm font-semibold text-red-700" href="{{ route('equipment.index') }}">Inventário</a>
-            </div>
-            <div class="space-y-3">
-                @forelse ($lowStockEquipment as $item)
-                    <div class="flex items-center justify-between rounded-2xl border border-red-100 bg-red-50 p-4">
+            <h3 class="section-title mb-4">Stock baixo</h3>
+
+            @forelse ($lowStockUniformItems as $item)
+                <div class="flex justify-between border-b py-2">
+                    <span>{{ $item->name }}</span>
+                    <span class="text-red-600 font-bold">
+                        {{ $item->available_quantity }}
+                    </span>
+                </div>
+            @empty
+                <p class="empty">Sem alertas de stock.</p>
+            @endforelse
+        </div>
+
+        {{-- RECENTES --}}
+        <div class="grid grid-cols-2 gap-6">
+
+            {{-- PESSOAL --}}
+            <div class="card">
+                <h3 class="section-title mb-4">Elementos recentes</h3>
+
+                @foreach ($recentPersonnel as $person)
+                    <div class="flex justify-between py-2 border-b">
                         <div>
-                            <p class="font-semibold">{{ $item->name }}</p>
-                            <p class="text-sm text-red-700">{{ $item->category ?: 'Sem categoria' }}</p>
+                            <p class="font-semibold">{{ $person->name }}</p>
+                            <p class="text-sm text-gray-500">
+                                {{ $person->number }} · {{ $person->rank }}
+                            </p>
                         </div>
-                        <span class="badge danger">{{ $item->available_quantity }} disp.</span>
+
+                        <span class="{{ $person->status === 'ativo' ? 'badge' : 'badge muted' }}">
+                            {{ ucfirst($person->status) }}
+                        </span>
+                    </div>
+                @endforeach
+            </div>
+
+            {{-- ATRIBUIÇÕES --}}
+            <div class="card">
+                <h3 class="section-title mb-4">Últimas atribuições</h3>
+
+                @forelse ($recentAssignments as $assignment)
+                    <div class="border-b py-3">
+                        <p class="font-semibold">
+                            {{ $assignment->person->name }}
+                        </p>
+
+                        <p class="text-sm text-gray-500">
+                            {{ $assignment->uniformItem->name }} ·
+                            {{ $assignment->quantity }} unidade(s)
+                        </p>
+
+                        <p class="text-xs text-gray-400">
+                            {{ $assignment->assigned_at?->format('d/m/Y') }}
+                        </p>
                     </div>
                 @empty
-                    <p class="empty">Sem alertas de stock. Pequena vitória logística.</p>
+                    <p class="empty">Sem atribuições.</p>
                 @endforelse
             </div>
+
         </div>
-    </section>
-@endsection
+
+    </div>
+</x-app-layout>

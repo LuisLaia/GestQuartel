@@ -1,12 +1,12 @@
-@extends('layouts.app', ['title' => 'Atribuições - GestQuartel'])
+@extends('layouts.app', ['title' => 'Atribuicoes - GestQuartel'])
 
 @section('content')
     <div class="page-header">
         <div>
-            <p class="eyebrow">Equipamento entregue</p>
-            <h2 class="page-title">Atribuições</h2>
+            <p class="eyebrow">Fardamento entregue</p>
+            <h2 class="page-title">Atribuicoes</h2>
         </div>
-        <a class="btn-primary" href="{{ route('assignments.create') }}">Nova atribuição</a>
+        <a class="btn-primary" href="{{ route('uniform.assignments.create') }}">Nova atribuicao</a>
     </div>
 
     <div class="card overflow-hidden p-0">
@@ -14,9 +14,9 @@
             <thead>
                 <tr>
                     <th>Pessoa</th>
-                    <th>Equipamento</th>
+                    <th>Peca</th>
                     <th>Quantidade</th>
-                    <th>Atribuído em</th>
+                    <th>Atribuido em</th>
                     <th>Estado</th>
                     <th></th>
                 </tr>
@@ -25,7 +25,7 @@
                 @forelse ($assignments as $assignment)
                     <tr>
                         <td class="font-semibold">{{ $assignment->person->name }}</td>
-                        <td>{{ $assignment->equipment->name }}</td>
+                        <td>{{ $assignment->uniformItem->name }}</td>
                         <td>{{ $assignment->quantity }}</td>
                         <td>{{ $assignment->assigned_at->format('d/m/Y') }}</td>
                         <td>
@@ -35,9 +35,9 @@
                         </td>
                         <td class="text-right">
                             @if ($assignment->isActive())
-                                <form method="POST" action="{{ route('assignments.return', $assignment) }}">
+                                <form method="POST" action="{{ route('uniform.assignments.return', $assignment) }}">
                                     @csrf @method('PATCH')
-                                    <button class="link">Registar devolução</button>
+                                    <button class="link">Registar devolucao</button>
                                 </form>
                             @else
                                 <span class="text-sm text-slate-400">{{ $assignment->returned_at->format('d/m/Y') }}</span>
@@ -45,7 +45,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="empty">Sem atribuições registadas.</td></tr>
+                    <tr><td colspan="6" class="empty">Sem atribuicoes registadas.</td></tr>
                 @endforelse
             </tbody>
         </table>
