@@ -1,59 +1,51 @@
 @extends('layouts.app', ['title' => 'Pessoas - GestQuartel'])
 
 @section('content')
-    <div class="page-header">
-        <div>
-            <p class="eyebrow">Operacionais e equipa</p>
-            <h2 class="page-title">Pessoas</h2>
+    <div class="space-y-6">
+        <div class="page-header">
+            <div>
+                <p class="eyebrow">Operacionais e equipa</p>
+                <h1 class="page-title">Pessoas</h1>
+            </div>
+            <div class="flex gap-3">
+                <a class="btn-primary" href="{{ route('personnel.create') }}">Adicionar pessoa</a>
+            </div>
         </div>
-        <a class="btn-primary" href="{{ route('personnel.create') }}">Adicionar pessoa</a>
-    </div>
 
-    @if (session('success'))
-        <div class="mb-5 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-            {{ session('success') }}
-        </div>
-    @endif
+        <form class="flex gap-3" method="GET">
+            <input class="input" name="search" placeholder="Pesquisar por nome, número, email ou posto" value="{{ $search }}">
+            <button class="btn-secondary">Pesquisar</button>
+        </form>
 
-    @if (session('error'))
-        <div class="mb-5 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {{ session('error') }}
-        </div>
-    @endif
-
-    <form class="mb-5 flex gap-3" method="GET">
-        <input class="input" name="search" placeholder="Pesquisar por nome, número, email ou posto" value="{{ $search }}">
-        <button class="btn-secondary">Pesquisar</button>
-    </form>
-
-    <div class="card overflow-hidden p-0">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>Número</th>
-                    <th>Posto</th>
-                    <th>Contacto</th>
-                    <th>Estado</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($people as $person)
+        <div class="card overflow-hidden p-0">
+            <table class="table w-full">
+                <thead>
                     <tr>
-                        <td class="font-semibold">{{ $person->name }}</td>
-                        <td>{{ $person->mechanographic_number ?: $person->number ?: '—' }}</td>
-                        <td>{{ $person->rank ?: '—' }}</td>
-                        <td>{{ $person->phone ?: $person->email ?: '—' }}</td>
-                        <td><span class="badge">{{ ucfirst($person->status) }}</span></td>
-                        <td class="text-right"><a class="link" href="{{ route('personnel.show', $person) }}">Abrir</a></td>
+                        <th>Nome</th>
+                        <th>Número</th>
+                        <th>Posto</th>
+                        <th>Contacto</th>
+                        <th>Estado</th>
+                        <th></th>
                     </tr>
-                @empty
-                    <tr><td colspan="6" class="empty">Sem pessoas registadas.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    @forelse ($people as $person)
+                        <tr>
+                            <td class="font-semibold">{{ $person->name }}</td>
+                            <td>{{ $person->mechanographic_number ?: $person->number ?: '-' }}</td>
+                            <td>{{ $person->rank ?: '-' }}</td>
+                            <td>{{ $person->phone ?: $person->email ?: '-' }}</td>
+                            <td><span class="badge">{{ ucfirst($person->status) }}</span></td>
+                            <td class="text-right"><a class="link" href="{{ route('personnel.show', $person) }}">Abrir</a></td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="6" class="empty">Sem pessoas registadas.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
 
-    <div class="mt-5">{{ $people->links() }}</div>
+        <div>{{ $people->links() }}</div>
+    </div>
 @endsection

@@ -15,5 +15,6 @@ class Vehicle extends Model
         'type',
         'status',
         'year',
+        'notes',
     ];
 }

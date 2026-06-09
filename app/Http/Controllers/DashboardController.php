@@ -25,7 +25,8 @@ class DashboardController extends Controller
 
             'vehiclesCount' => Vehicle::count(),
             'activeVehicles' => Vehicle::where('status', 'operacional')->count(),
-            'inactiveVehicles' => Vehicle::where('status', '!=', 'operacional')->count(),
+            'maintenanceVehicles' => Vehicle::where('status', 'manutencao')->count(),
+            'inactiveVehicles' => Vehicle::where('status', 'inativo')->count(),
 
             'recentAssignments' => UniformAssignment::with(['person', 'uniformItem'])
                 ->latest('assigned_at')
@@ -33,6 +34,8 @@ class DashboardController extends Controller
                 ->get(),
 
             'recentPersonnel' => Person::latest()->limit(5)->get(),
+            'recentVehicles' => Vehicle::latest()->limit(5)->get(),
+            'recentStockEntries' => UniformItem::latest()->limit(5)->get(),
 
             'lowStockUniformItems' => UniformItem::whereColumn('available_quantity', '<=', 'minimum_quantity')
                 ->orderBy('available_quantity')

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\UniformItem;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -39,11 +40,57 @@ class UniformItemController extends Controller
         return redirect()->route('uniform.items.index')->with('status', 'Peca de fardamento criada com sucesso.');
     }
 
-    public function show(UniformItem $uniformItem): View
+    public function show(Request $request, UniformItem $uniformItem): View
     {
-        $uniformItem->load(['assignments.person']);
+        $uniformItem->load(['assignments' => fn ($query) => $query->with('person')->latest('assigned_at')->latest()]);
 
-        return view('uniform.items.show', compact('uniformItem'));
+        $assignedQuantity = $uniformItem->assignments
+            ->whereNull('returned_at')
+            ->sum('quantity');
+
+        $movements = collect([
+            [
+                'date' => $uniformItem->created_at,
+                'type' => 'Entrada de stock',
+                'description' => 'Stock inicial',
+                'quantity' => $uniformItem->total_quantity,
+            ],
+        ]);
+
+        foreach ($uniformItem->assignments as $assignment) {
+            $movements->push([
+                'date' => $assignment->assigned_at,
+                'type' => 'Atribuição',
+                'description' => $assignment->person?->name ?? 'Pessoa removida',
+                'quantity' => -$assignment->quantity,
+            ]);
+
+            if ($assignment->returned_at) {
+                $movements->push([
+                    'date' => $assignment->returned_at,
+                    'type' => 'Devolução',
+                    'description' => $assignment->person?->name ?? 'Pessoa removida',
+                    'quantity' => $assignment->quantity,
+                ]);
+            }
+        }
+
+        $movements = $movements->sortByDesc('date')->values();
+        $page = $request->integer('movements_page', 1);
+
+        $movements = new LengthAwarePaginator(
+            $movements->forPage($page, 10)->values(),
+            $movements->count(),
+            10,
+            $page,
+            [
+                'path' => $request->url(),
+                'query' => $request->query(),
+                'pageName' => 'movements_page',
+            ]
+        );
+
+        return view('uniform.items.show', compact('uniformItem', 'assignedQuantity', 'movements'));
     }
 
     public function edit(UniformItem $uniformItem): View
@@ -70,9 +117,9 @@ class UniformItemController extends Controller
 
     public function destroy(UniformItem $uniformItem): RedirectResponse
     {
-        if ($uniformItem->assignments()->whereNull('returned_at')->exists()) {
+        if ($uniformItem->assignments()->exists()) {
             return back()->withErrors([
-                'uniform_item' => 'Nao e possivel remover fardamento ainda atribuido.',
+                'uniform_item' => 'Nao e possivel remover fardamento com historico de atribuicoes.',
             ]);
         }
 

@@ -16,29 +16,19 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans antialiased bg-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        @include('layouts.navigation')
 
-    <!-- Navbar -->
-    @include('layouts.navigation')
+        <main class="mt-6">
+            @include('layouts.partials.flash')
 
-    <!-- Page Heading -->
-    @isset($header)
-        <header class="bg-white shadow">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                {{ $header }}
-            </div>
-        </header>
-    @endisset
-
-    <!-- Page Content -->
-    <main class="mt-6">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             @isset($slot)
                 {{ $slot }}
             @else
                 @yield('content')
             @endisset
-        </div>
-    </main>
+        </main>
+    </div>
 
 </body>
 </html>

@@ -6,6 +6,7 @@ use App\Models\Person;
 use App\Models\Vehicle;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
+use RuntimeException;
 
 class PreventechService
 {
@@ -24,7 +25,7 @@ class PreventechService
         $result = $this->getFirefighters();
 
         if ($result['error']) {
-            return 0;
+            throw new RuntimeException($result['error']);
         }
 
         $synced = 0;
@@ -75,7 +76,7 @@ class PreventechService
         $result = $this->getVehicles();
 
         if ($result['error']) {
-            return 0;
+            throw new RuntimeException($result['error']);
         }
 
         $synced = 0;
@@ -94,8 +95,9 @@ class PreventechService
                     'name' => $name ?? $plate,
                     'plate' => $plate,
                     'type' => $this->stringValue(data_get($vehicle, 'type') ?? data_get($vehicle, 'tipo')),
-                    'status' => $this->stringValue(data_get($vehicle, 'status') ?? data_get($vehicle, 'estado')) ?? 'operacional',
+                    'status' => $this->normalizeVehicleStatus(data_get($vehicle, 'status') ?? data_get($vehicle, 'estado')),
                     'year' => $this->integerValue(data_get($vehicle, 'year') ?? data_get($vehicle, 'ano')),
+                    'notes' => $this->stringValue(data_get($vehicle, 'notes') ?? data_get($vehicle, 'observacoes')),
                 ], fn ($value) => $value !== null)
             );
 
@@ -198,6 +200,17 @@ class PreventechService
             'inativo', 'inactive', '0' => 'inativo',
             'suspenso', 'suspended' => 'suspenso',
             default => 'ativo',
+        };
+    }
+
+    private function normalizeVehicleStatus(mixed $status): string
+    {
+        $status = strtolower((string) $status);
+
+        return match ($status) {
+            'manutencao', 'manutenção', 'maintenance' => 'manutencao',
+            'inativo', 'inactive', '0' => 'inativo',
+            default => 'operacional',
         };
     }
 

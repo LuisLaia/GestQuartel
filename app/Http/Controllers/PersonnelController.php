@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Person;
-use App\Services\PreventechService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -44,7 +43,7 @@ class PersonnelController extends Controller
 
     public function show(Person $person): View
     {
-        $person->load(['assignments.uniformItem']);
+        $person->load(['assignments' => fn ($query) => $query->with('uniformItem')->latest('assigned_at')->latest()]);
 
         return view('people.show', compact('person'));
     }
@@ -74,59 +73,6 @@ class PersonnelController extends Controller
         return redirect()->route('personnel.index')->with('status', 'Pessoa removida com sucesso.');
     }
 
-    public function syncPreventech(PreventechService $service): RedirectResponse
-    {
-        $result = $service->getFirefighters();
-
-        if ($result['error']) {
-            return back()->with('error', $result['error']);
-        }
-
-        $synced = 0;
-
-        foreach ($result['data'] as $firefighter) {
-            $externalId = $this->stringValue(data_get($firefighter, 'external_id') ?? data_get($firefighter, 'id'));
-            $mechanographicNumber = $this->stringValue(
-                data_get($firefighter, 'mechanographic_number')
-                    ?? data_get($firefighter, 'numero_mecanografico')
-                    ?? data_get($firefighter, 'number')
-                    ?? data_get($firefighter, 'numero')
-            );
-            $email = $this->stringValue(data_get($firefighter, 'email'));
-            $name = $this->stringValue(data_get($firefighter, 'name') ?? data_get($firefighter, 'nome'));
-
-            if ($name === null) {
-                continue;
-            }
-
-            $identity = $this->preventechIdentity($externalId, $mechanographicNumber, $email);
-
-            if ($identity === null) {
-                continue;
-            }
-
-            Person::updateOrCreate($identity, array_filter([
-                'external_id' => $externalId,
-                'name' => $name,
-                'mechanographic_number' => $mechanographicNumber,
-                'email' => $email,
-                'phone' => $this->stringValue(
-                    data_get($firefighter, 'phone')
-                        ?? data_get($firefighter, 'telefone')
-                        ?? data_get($firefighter, 'telemovel')
-                ),
-                'rank' => $this->stringValue(data_get($firefighter, 'rank') ?? data_get($firefighter, 'posto')),
-                'status' => $this->normalizePreventechStatus(data_get($firefighter, 'status') ?? data_get($firefighter, 'estado')),
-            ], fn ($value) => $value !== null));
-
-            $synced++;
-        }
-
-        return redirect()
-            ->route('personnel.index')
-            ->with('success', "{$synced} registo(s) sincronizado(s) da Preventech.");
-    }
-
     private function validatedData(Request $request, ?Person $person = null): array
     {
         $numberRule = Rule::unique('people', 'number');
@@ -151,35 +97,4 @@ class PersonnelController extends Controller
         ]);
     }
 
-    private function preventechIdentity(?string $externalId, ?string $mechanographicNumber, ?string $email): ?array
-    {
-        return match (true) {
-            $externalId !== null => ['external_id' => $externalId],
-            $mechanographicNumber !== null => ['mechanographic_number' => $mechanographicNumber],
-            $email !== null => ['email' => $email],
-            default => null,
-        };
-    }
-
-    private function normalizePreventechStatus(mixed $status): string
-    {
-        $status = strtolower((string) $status);
-
-        return match ($status) {
-            'inativo', 'inactive', '0' => 'inativo',
-            'suspenso', 'suspended' => 'suspenso',
-            default => 'ativo',
-        };
-    }
-
-    private function stringValue(mixed $value): ?string
-    {
-        if ($value === null) {
-            return null;
-        }
-
-        $value = trim((string) $value);
-
-        return $value === '' ? null : $value;
-    }
 }

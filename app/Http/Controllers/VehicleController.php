@@ -22,7 +22,14 @@ class VehicleController extends Controller
             ->latest()
             ->get();
 
-        return view('vehicles.index', compact('vehicles'));
+        $stats = [
+            'total' => Vehicle::count(),
+            'operational' => Vehicle::where('status', 'operacional')->count(),
+            'maintenance' => Vehicle::where('status', 'manutencao')->count(),
+            'inactive' => Vehicle::where('status', 'inativo')->count(),
+        ];
+
+        return view('vehicles.index', compact('vehicles', 'stats'));
     }
 
     public function create(): View
@@ -38,11 +45,17 @@ class VehicleController extends Controller
             'type' => ['nullable', 'string', 'max:100'],
             'year' => ['nullable', 'integer', 'min:1900', 'max:'.((int) date('Y') + 1)],
             'status' => ['required', 'in:operacional,manutencao,inativo'],
+            'notes' => ['nullable', 'string'],
         ]);
 
         Vehicle::create($data);
 
         return redirect()->route('vehicles.index')->with('success', 'Veiculo criado com sucesso.');
+    }
+
+    public function show(Vehicle $vehicle): View
+    {
+        return view('vehicles.show', compact('vehicle'));
     }
 
     public function edit(Vehicle $vehicle): View
@@ -58,6 +71,7 @@ class VehicleController extends Controller
             'type' => ['nullable', 'string', 'max:100'],
             'year' => ['nullable', 'integer', 'min:1900', 'max:'.((int) date('Y') + 1)],
             'status' => ['required', 'in:operacional,manutencao,inativo'],
+            'notes' => ['nullable', 'string'],
         ]);
 
         $vehicle->update($data);
