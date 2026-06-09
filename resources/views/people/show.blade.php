@@ -19,7 +19,7 @@
         <div class="card xl:col-span-1">
             <h3 class="section-title">Dados</h3>
             <dl class="mt-4 space-y-3 text-sm">
-                <div><dt class="label">Número</dt><dd>{{ $person->number ?: '—' }}</dd></div>
+                <div><dt class="label">Número</dt><dd>{{ $person->mechanographic_number ?: $person->number ?: '—' }}</dd></div>
                 <div><dt class="label">Posto/Função</dt><dd>{{ $person->rank ?: '—' }}</dd></div>
                 <div><dt class="label">Email</dt><dd>{{ $person->email ?: '—' }}</dd></div>
                 <div><dt class="label">Telefone</dt><dd>{{ $person->phone ?: '—' }}</dd></div>

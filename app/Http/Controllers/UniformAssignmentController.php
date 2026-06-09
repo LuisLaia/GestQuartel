@@ -46,9 +46,7 @@ class UniformAssignmentController extends Controller
             $uniformItem = UniformItem::whereKey($data['uniform_item_id'])->lockForUpdate()->firstOrFail();
 
             if ($uniformItem->available_quantity < $data['quantity']) {
-                throw ValidationException::withMessages([
-                    'quantity' => "So existem {$uniformItem->available_quantity} unidades disponiveis.",
-                ]);
+                throw ValidationException::withMessages(['quantity' => 'Stock insuficiente.']);
             }
 
             $uniformItem->decrement('available_quantity', $data['quantity']);

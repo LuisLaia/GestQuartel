@@ -6,9 +6,7 @@
     </x-slot>
 
     <div class="p-6 space-y-6">
-
-        {{-- KPIs --}}
-        <div class="grid grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
             <div class="card bg-rose-600 text-white">
                 <p>Pessoal Ativo</p>
                 <h2 class="text-3xl font-bold">{{ $activePeopleCount }}</h2>
@@ -27,12 +25,21 @@
             </div>
 
             <div class="card">
-                <p>Atribuições Ativas</p>
-                <h2 class="text-3xl font-bold">{{ $activeAssignmentsCount }}</h2>
+                <p>Veículos totais</p>
+                <h2 class="text-3xl font-bold">{{ $vehiclesCount }}</h2>
+            </div>
+
+            <div class="card">
+                <p>Veículos operacionais</p>
+                <h2 class="text-3xl font-bold">{{ $activeVehicles }}</h2>
+            </div>
+
+            <div class="card">
+                <p>Veículos inativos</p>
+                <h2 class="text-3xl font-bold">{{ $inactiveVehicles }}</h2>
             </div>
         </div>
 
-        {{-- STOCK BAIXO --}}
         <div class="card">
             <h3 class="section-title mb-4">Stock baixo</h3>
 
@@ -48,10 +55,7 @@
             @endforelse
         </div>
 
-        {{-- RECENTES --}}
         <div class="grid grid-cols-2 gap-6">
-
-            {{-- PESSOAL --}}
             <div class="card">
                 <h3 class="section-title mb-4">Elementos recentes</h3>
 
@@ -60,7 +64,7 @@
                         <div>
                             <p class="font-semibold">{{ $person->name }}</p>
                             <p class="text-sm text-gray-500">
-                                {{ $person->number }} · {{ $person->rank }}
+                                {{ $person->mechanographic_number ?: $person->number }} · {{ $person->rank }}
                             </p>
                         </div>
 
@@ -71,7 +75,6 @@
                 @endforeach
             </div>
 
-            {{-- ATRIBUIÇÕES --}}
             <div class="card">
                 <h3 class="section-title mb-4">Últimas atribuições</h3>
 
@@ -94,8 +97,6 @@
                     <p class="empty">Sem atribuições.</p>
                 @endforelse
             </div>
-
         </div>
-
     </div>
 </x-app-layout>

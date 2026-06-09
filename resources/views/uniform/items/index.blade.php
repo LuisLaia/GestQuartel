@@ -6,7 +6,10 @@
             <p class="eyebrow">Inventario</p>
             <h2 class="page-title">Fardamento</h2>
         </div>
-        <a class="btn-primary" href="{{ route('uniform.items.create') }}">Adicionar peca</a>
+        <div class="flex gap-3">
+            <a class="btn-secondary" href="{{ route('uniform.assignments.index') }}">Ver atribuições</a>
+            <a class="btn-primary" href="{{ route('uniform.items.create') }}">Adicionar peca</a>
+        </div>
     </div>
 
     <form class="mb-5 flex gap-3" method="GET">

@@ -10,10 +10,12 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ExternalDataController;
 use App\Http\Controllers\PersonnelController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UniformAssignmentController;
 use App\Http\Controllers\UniformItemController;
+use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => auth()->check()
@@ -57,9 +59,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     // PROFILE
+    Route::get('/profile/show', function () {
+        return view('profile.show');
+    })->name('profile.show');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/profile/sync/firefighters', [ExternalDataController::class, 'syncFirefighters'])
+        ->name('profile.sync.firefighters');
+    Route::post('/profile/sync/vehicles', [ExternalDataController::class, 'syncVehicles'])
+        ->name('profile.sync.vehicles');
 
     Route::resource('people', PersonnelController::class)
         ->names('personnel');
@@ -74,4 +83,16 @@ Route::middleware('auth')->group(function () {
         Route::post('/', [UniformAssignmentController::class, 'store'])->name('store');
         Route::patch('/{uniformAssignment}/return', [UniformAssignmentController::class, 'returnUniformItem'])->name('return');
     });
+
+    Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
+    Route::get('/vehicles/create', [VehicleController::class, 'create'])->name('vehicles.create');
+    Route::post('/vehicles', [VehicleController::class, 'store'])->name('vehicles.store');
+    Route::get('/vehicles/{vehicle}/edit', [VehicleController::class, 'edit'])->name('vehicles.edit');
+    Route::put('/vehicles/{vehicle}', [VehicleController::class, 'update'])->name('vehicles.update');
+    Route::delete('/vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
+
+    Route::get('/external/firefighters', [ExternalDataController::class, 'firefighters'])
+        ->name('external.firefighters');
+    Route::get('/external/vehicles', [ExternalDataController::class, 'vehicles'])
+        ->name('external.vehicles');
 });

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Person;
 use App\Models\UniformAssignment;
 use App\Models\UniformItem;
+use App\Models\Vehicle;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -22,7 +23,9 @@ class DashboardController extends Controller
 
             'lowStockCount' => UniformItem::whereColumn('available_quantity', '<=', 'minimum_quantity')->count(),
 
-            'activeAssignmentsCount' => UniformAssignment::whereNull('returned_at')->count(),
+            'vehiclesCount' => Vehicle::count(),
+            'activeVehicles' => Vehicle::where('status', 'operacional')->count(),
+            'inactiveVehicles' => Vehicle::where('status', '!=', 'operacional')->count(),
 
             'recentAssignments' => UniformAssignment::with(['person', 'uniformItem'])
                 ->latest('assigned_at')

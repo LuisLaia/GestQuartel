@@ -9,6 +9,18 @@
         <a class="btn-primary" href="{{ route('personnel.create') }}">Adicionar pessoa</a>
     </div>
 
+    @if (session('success'))
+        <div class="mb-5 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="mb-5 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {{ session('error') }}
+        </div>
+    @endif
+
     <form class="mb-5 flex gap-3" method="GET">
         <input class="input" name="search" placeholder="Pesquisar por nome, número, email ou posto" value="{{ $search }}">
         <button class="btn-secondary">Pesquisar</button>
@@ -30,7 +42,7 @@
                 @forelse ($people as $person)
                     <tr>
                         <td class="font-semibold">{{ $person->name }}</td>
-                        <td>{{ $person->number ?: '—' }}</td>
+                        <td>{{ $person->mechanographic_number ?: $person->number ?: '—' }}</td>
                         <td>{{ $person->rank ?: '—' }}</td>
                         <td>{{ $person->phone ?: $person->email ?: '—' }}</td>
                         <td><span class="badge">{{ ucfirst($person->status) }}</span></td>

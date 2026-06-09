@@ -22,6 +22,14 @@ return [
         'key' => env('RESEND_API_KEY'),
     ],
 
+    'preventech' => [
+        'base_url' => env('PREVENTECH_BASE_URL'),
+        'email' => env('PREVENTECH_EMAIL'),
+        'nif' => env('PREVENTECH_NIF'),
+        'api_key' => env('PREVENTECH_API_KEY'),
+        'token' => env('PREVENTECH_TOKEN'),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),

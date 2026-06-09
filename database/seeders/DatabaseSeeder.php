@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Person;
 use App\Models\UniformItem;
 use App\Models\User;
+use App\Models\Vehicle;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -64,5 +65,32 @@ class DatabaseSeeder extends Seeder
                 ]
             );
         }
+
+        Vehicle::firstOrCreate(
+            ['plate' => '00-AA-00'],
+            [
+                'name' => 'ABSC 01',
+                'type' => 'Ambulancia',
+                'year' => 2018,
+            ]
+        );
+
+        Vehicle::firstOrCreate(
+            ['plate' => '11-BB-11'],
+            [
+                'name' => 'VLCI 02',
+                'type' => 'Combate Incendios',
+                'year' => 2020,
+            ]
+        );
+
+        Vehicle::firstOrCreate(
+            ['plate' => '22-CC-22'],
+            [
+                'name' => 'VUCI 03',
+                'type' => 'Comando',
+                'year' => 2016,
+            ]
+        );
     }
 }
