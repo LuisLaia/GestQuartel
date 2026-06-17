@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\UniformItem;
+use App\Models\UniformItemSize;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Validation\ValidationException;
@@ -16,10 +18,12 @@ class UniformItemController extends Controller
         $search = $request->string('search')->toString();
 
         $uniformItems = UniformItem::query()
+            ->with('sizes')
             ->when($search, fn ($query) => $query->where(function ($query) use ($search): void {
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('category', 'like', "%{$search}%")
-                    ->orWhere('size', 'like', "%{$search}%");
+                    ->orWhere('size', 'like', "%{$search}%")
+                    ->orWhereHas('sizes', fn ($sizeQuery) => $sizeQuery->where('size', 'like', "%{$search}%"));
             }))
             ->orderBy('name')
             ->paginate(10)
@@ -33,16 +37,49 @@ class UniformItemController extends Controller
         return view('uniform.items.create', ['uniformItem' => new UniformItem()]);
     }
 
+    public function sizes(UniformItem $uniformItem): JsonResponse
+    {
+        return response()->json([
+            'sizes' => $uniformItem->sizes()
+                ->orderByRaw("CASE size WHEN 'XS' THEN 1 WHEN 'S' THEN 2 WHEN 'M' THEN 3 WHEN 'L' THEN 4 WHEN 'XL' THEN 5 WHEN 'XXL' THEN 6 ELSE 7 END")
+                ->orderBy('size')
+                ->get(['size', 'stock'])
+                ->map(fn ($size) => [
+                    'size' => $size->size,
+                    'stock' => (int) $size->stock,
+                    'label' => "{$size->size} ({$size->stock} disponiveis)",
+                ])
+                ->values(),
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
-        UniformItem::create($this->validatedData($request));
+        $data = $this->validatedData($request);
+        $size = $data['size'] ?? null;
+        $availableQuantity = $data['available_quantity'] ?? 0;
+
+        $uniformItem = UniformItem::create($data);
+
+        if ($size) {
+            UniformItemSize::updateOrCreate(
+                [
+                    'uniform_item_id' => $uniformItem->id,
+                    'size' => $size,
+                ],
+                ['stock' => $availableQuantity]
+            );
+        }
 
         return redirect()->route('uniform.items.index')->with('status', 'Peca de fardamento criada com sucesso.');
     }
 
     public function show(Request $request, UniformItem $uniformItem): View
     {
-        $uniformItem->load(['assignments' => fn ($query) => $query->with('person')->latest('assigned_at')->latest()]);
+        $uniformItem->load([
+            'sizes' => fn ($query) => $query->orderBy('size'),
+            'assignments' => fn ($query) => $query->with('person')->latest('assigned_at')->latest(),
+        ]);
 
         $assignedQuantity = $uniformItem->assignments
             ->whereNull('returned_at')
@@ -111,6 +148,16 @@ class UniformItemController extends Controller
 
         $data['available_quantity'] = $data['total_quantity'] - $assignedQuantity;
         $uniformItem->update($data);
+
+        if (! empty($data['size'])) {
+            UniformItemSize::updateOrCreate(
+                [
+                    'uniform_item_id' => $uniformItem->id,
+                    'size' => $data['size'],
+                ],
+                ['stock' => $data['available_quantity']]
+            );
+        }
 
         return redirect()->route('uniform.items.show', $uniformItem)->with('status', 'Peca de fardamento atualizada com sucesso.');
     }

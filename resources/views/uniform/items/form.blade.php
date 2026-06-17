@@ -9,7 +9,7 @@
         <input class="input" name="category" placeholder="Ex.: polo, bone, casaco" value="{{ old('category', $uniformItem->category) }}">
     </label>
     <label class="block">
-        <span class="label">Tamanho</span>
+        <span class="label">Tamanho inicial</span>
         <input class="input" name="size" placeholder="Ex.: M, L, 42" value="{{ old('size', $uniformItem->size) }}">
     </label>
     <label class="block">

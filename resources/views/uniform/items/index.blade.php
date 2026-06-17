@@ -24,7 +24,7 @@
                     <tr>
                         <th>Peça</th>
                         <th>Categoria</th>
-                        <th>Tamanho</th>
+                        <th>Tamanhos</th>
                         <th>Disponível</th>
                         <th>Total</th>
                         <th>Estado</th>
@@ -36,9 +36,11 @@
                         <tr>
                             <td class="font-semibold">{{ $item->name }}</td>
                             <td>{{ $item->category ?: '-' }}</td>
-                            <td>{{ $item->size ?: '-' }}</td>
                             <td>
-                                <span class="badge {{ $item->isLowStock() ? 'danger' : '' }}">{{ $item->available_quantity }}</span>
+                                {{ $item->sizes->pluck('size')->join(', ') ?: ($item->size ?: '-') }}
+                            </td>
+                            <td>
+                                <span class="badge {{ $item->isLowStock() ? 'danger' : '' }}">{{ $item->availableStock() }}</span>
                             </td>
                             <td>{{ $item->total_quantity }}</td>
                             <td>{{ ucfirst($item->condition) }}</td>

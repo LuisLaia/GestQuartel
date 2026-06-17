@@ -2,32 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UpdateVehicleRequest;
 use App\Models\Vehicle;
+use App\Services\VehicleService;
+use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class VehicleController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request, VehicleService $vehicleService): View
     {
         $search = $request->string('search')->toString();
-
-        $vehicles = Vehicle::query()
-            ->when($search, fn ($query) => $query->where(function ($query) use ($search): void {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('plate', 'like', "%{$search}%")
-                    ->orWhere('type', 'like', "%{$search}%");
-            }))
-            ->latest()
-            ->get();
-
-        $stats = [
-            'total' => Vehicle::count(),
-            'operational' => Vehicle::where('status', 'operacional')->count(),
-            'maintenance' => Vehicle::where('status', 'manutencao')->count(),
-            'inactive' => Vehicle::where('status', 'inativo')->count(),
-        ];
+        $vehicles = $vehicleService->search($search);
+        $stats = $vehicleService->stats();
 
         return view('vehicles.index', compact('vehicles', 'stats'));
     }
@@ -37,24 +27,23 @@ class VehicleController extends Controller
         return view('vehicles.create');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(UpdateVehicleRequest $request, VehicleService $vehicleService): RedirectResponse
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'plate' => ['nullable', 'string', 'max:50'],
-            'type' => ['nullable', 'string', 'max:100'],
-            'year' => ['nullable', 'integer', 'min:1900', 'max:'.((int) date('Y') + 1)],
-            'status' => ['required', 'in:operacional,manutencao,inativo'],
-            'notes' => ['nullable', 'string'],
-        ]);
+        try {
+            $vehicleService->create($request->validated());
+        } catch (Exception $exception) {
+            Log::error('Vehicle store error', ['message' => $exception->getMessage()]);
 
-        Vehicle::create($data);
+            return back()->withInput()->with('error', 'Erro ao guardar veiculo.');
+        }
 
         return redirect()->route('vehicles.index')->with('success', 'Veiculo criado com sucesso.');
     }
 
     public function show(Vehicle $vehicle): View
     {
+        $vehicle->load('trips');
+
         return view('vehicles.show', compact('vehicle'));
     }
 
@@ -63,25 +52,34 @@ class VehicleController extends Controller
         return view('vehicles.edit', compact('vehicle'));
     }
 
-    public function update(Request $request, Vehicle $vehicle): RedirectResponse
+    public function update(UpdateVehicleRequest $request, Vehicle $vehicle, VehicleService $vehicleService): RedirectResponse
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'plate' => ['nullable', 'string', 'max:50'],
-            'type' => ['nullable', 'string', 'max:100'],
-            'year' => ['nullable', 'integer', 'min:1900', 'max:'.((int) date('Y') + 1)],
-            'status' => ['required', 'in:operacional,manutencao,inativo'],
-            'notes' => ['nullable', 'string'],
-        ]);
+        try {
+            $vehicleService->update($vehicle, $request->validated());
+        } catch (Exception $exception) {
+            Log::error('Vehicle update error', [
+                'vehicle_id' => $vehicle->id,
+                'message' => $exception->getMessage(),
+            ]);
 
-        $vehicle->update($data);
+            return back()->withInput()->with('error', 'Erro ao atualizar veiculo.');
+        }
 
         return redirect()->route('vehicles.index')->with('success', 'Veiculo atualizado.');
     }
 
     public function destroy(Vehicle $vehicle): RedirectResponse
     {
-        $vehicle->delete();
+        try {
+            $vehicle->delete();
+        } catch (Exception $exception) {
+            Log::error('Vehicle delete error', [
+                'vehicle_id' => $vehicle->id,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return back()->with('error', 'Erro ao eliminar veiculo.');
+        }
 
         return redirect()->route('vehicles.index')->with('success', 'Veiculo eliminado.');
     }

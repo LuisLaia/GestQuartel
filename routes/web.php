@@ -77,9 +77,12 @@ Route::middleware('auth')->group(function () {
     Route::resource('uniform/items', UniformItemController::class)
         ->names('uniform.items')
         ->parameters(['items' => 'uniformItem']);
+    Route::get('/uniform-items/{uniformItem}/sizes', [UniformItemController::class, 'sizes'])
+        ->name('uniform.items.sizes');
 
     Route::prefix('uniform/assignments')->name('uniform.assignments.')->group(function () {
         Route::get('/', [UniformAssignmentController::class, 'index'])->name('index');
+        Route::get('/suggest-size', [UniformAssignmentController::class, 'suggestSize'])->name('suggest-size');
         Route::get('/create', [UniformAssignmentController::class, 'create'])->name('create');
         Route::post('/', [UniformAssignmentController::class, 'store'])->name('store');
         Route::patch('/{uniformAssignment}/return', [UniformAssignmentController::class, 'returnUniformItem'])->name('return');

@@ -2,72 +2,100 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreUniformAssignmentRequest;
 use App\Models\Person;
 use App\Models\UniformAssignment;
 use App\Models\UniformItem;
+use App\Services\UniformService;
+use App\Services\UniformSizeService;
+use Exception;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class UniformAssignmentController extends Controller
 {
-    public function index(): View
+    public function index(Request $request, UniformService $uniformService): View
     {
-        $assignments = UniformAssignment::with(['person', 'uniformItem'])
-            ->latest('assigned_at')
-            ->latest()
-            ->paginate(12);
+        $filters = $request->only(['person_id', 'item_id', 'status', 'date_from', 'date_to', 'search']);
 
-        return view('uniform.assignments.index', compact('assignments'));
+        return view('uniform.assignments.index', [
+            'assignments' => $uniformService->assignments($filters),
+            'people' => $uniformService->peopleForFilter(),
+            'uniformItems' => $uniformService->itemsForFilter(),
+            'hasFilters' => $request->filled(['person_id', 'item_id', 'status', 'date_from', 'date_to', 'search']),
+        ]);
     }
 
-    public function create(): View
+    public function create(UniformService $uniformService): View
     {
         return view('uniform.assignments.create', [
-            'people' => Person::where('status', 'ativo')->orderBy('name')->get(),
-            'uniformItems' => UniformItem::where('available_quantity', '>', 0)->orderBy('name')->get(),
+            'people' => $uniformService->activePeople(),
+            'uniformItems' => $uniformService->availableItems(),
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function suggestSize(Request $request, UniformSizeService $uniformSizeService): JsonResponse
     {
         $data = $request->validate([
-            'person_id' => ['required', Rule::exists('people', 'id')->where('status', 'ativo')],
+            'person_id' => ['required', 'exists:people,id'],
             'uniform_item_id' => ['required', 'exists:uniform_items,id'],
-            'quantity' => ['required', 'integer', 'min:1'],
-            'assigned_at' => ['required', 'date'],
-            'notes' => ['nullable', 'string'],
         ]);
 
-        DB::transaction(function () use ($data): void {
-            $uniformItem = UniformItem::whereKey($data['uniform_item_id'])->lockForUpdate()->firstOrFail();
+        $person = Person::findOrFail($data['person_id']);
+        $item = UniformItem::findOrFail($data['uniform_item_id']);
 
-            if ($uniformItem->available_quantity < $data['quantity']) {
-                throw ValidationException::withMessages(['quantity' => 'Stock insuficiente.']);
-            }
+        if (! $uniformSizeService->hasEnoughData($person, $item)) {
+            return response()->json([
+                'size' => null,
+                'message' => 'Sem dados suficientes para recomendacao.',
+            ]);
+        }
 
-            $uniformItem->decrement('available_quantity', $data['quantity']);
-            UniformAssignment::create($data);
-        });
+        $size = $uniformSizeService->suggestSize($person, $item);
+
+        return response()->json([
+            'size' => $size,
+            'message' => $size
+                ? "Tamanho sugerido com base nas medidas: {$size}"
+                : 'Sem dados suficientes para recomendacao.',
+        ]);
+    }
+
+    public function store(StoreUniformAssignmentRequest $request, UniformService $uniformService): RedirectResponse
+    {
+        try {
+            $uniformService->assign($request->validated());
+        } catch (ValidationException $exception) {
+            throw $exception;
+        } catch (Exception $exception) {
+            Log::error('Uniform assignment store error', ['message' => $exception->getMessage()]);
+
+            return back()->withInput()->with('error', 'Erro ao registar atribuicao.');
+        }
 
         return redirect()->route('uniform.assignments.index')->with('status', 'Fardamento atribuido e stock atualizado.');
     }
 
-    public function returnUniformItem(UniformAssignment $uniformAssignment): RedirectResponse
+    public function returnUniformItem(UniformAssignment $uniformAssignment, UniformService $uniformService): RedirectResponse
     {
         if (! $uniformAssignment->isActive()) {
             return back()->with('status', 'Esta atribuicao ja tinha sido devolvida.');
         }
 
-        DB::transaction(function () use ($uniformAssignment): void {
-            $uniformItem = UniformItem::whereKey($uniformAssignment->uniform_item_id)->lockForUpdate()->firstOrFail();
-            $uniformItem->increment('available_quantity', $uniformAssignment->quantity);
+        try {
+            $uniformService->returnAssignment($uniformAssignment);
+        } catch (Exception $exception) {
+            Log::error('Uniform assignment return error', [
+                'assignment_id' => $uniformAssignment->id,
+                'message' => $exception->getMessage(),
+            ]);
 
-            $uniformAssignment->update(['returned_at' => now()->toDateString()]);
-        });
+            return back()->with('error', 'Erro ao registar devolucao.');
+        }
 
         return redirect()->route('uniform.assignments.index')->with('status', 'Devolucao registada e stock reposto.');
     }

@@ -32,7 +32,10 @@ return [
 
     'cartrack' => [
         'base_url' => env('CARTRACK_BASE_URL'),
-        'api_key' => env('CARTRACK_API_KEY'),
+        'client_id' => env('CARTRACK_CLIENT_ID'),
+        'client_secret' => env('CARTRACK_CLIENT_SECRET'),
+        'username' => env('CARTRACK_USERNAME'),
+        'password' => env('CARTRACK_PASSWORD'),
         'token' => env('CARTRACK_TOKEN'),
     ],
 

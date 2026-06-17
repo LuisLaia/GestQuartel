@@ -36,14 +36,20 @@ class Vehicle extends Model
 
     public function updateMetrics(): void
     {
+        $totalKm = (float) $this->trips()
+            ->where('distance_km', '>', 0)
+            ->sum('distance_km');
+
+        $totalFuel = (float) $this->trips()
+            ->where('distance_km', '>', 0)
+            ->where('fuel_used_liters', '>', 0)
+            ->sum('fuel_used_liters');
+
         $this->forceFill([
-            'total_km' => $this->trips()
-                ->where('distance_km', '>', 0)
-                ->sum('distance_km'),
-            'average_consumption' => $this->trips()
-                ->where('distance_km', '>', 0)
-                ->whereNotNull('consumption')
-                ->avg('consumption'),
+            'total_km' => $totalKm,
+            'average_consumption' => $totalKm > 0 && $totalFuel > 0
+                ? round(($totalFuel / $totalKm) * 100, 2)
+                : null,
         ])->saveQuietly();
     }
 

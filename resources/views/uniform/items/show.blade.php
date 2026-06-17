@@ -22,13 +22,21 @@
                 <h3 class="section-title">Stock</h3>
                 <dl class="mt-4 space-y-3 text-sm">
                     <div><dt class="label">Categoria</dt><dd>{{ $uniformItem->category ?: '-' }}</dd></div>
-                    <div><dt class="label">Tamanho</dt><dd>{{ $uniformItem->size ?: '-' }}</dd></div>
+                    <div><dt class="label">Tamanhos</dt><dd>{{ $uniformItem->sizes->pluck('size')->join(', ') ?: '-' }}</dd></div>
                     <div><dt class="label">Condição</dt><dd>{{ ucfirst($uniformItem->condition) }}</dd></div>
-                    <div><dt class="label">Stock disponível</dt><dd class="text-2xl font-bold">{{ $uniformItem->available_quantity }}</dd></div>
+                    <div><dt class="label">Stock disponível</dt><dd class="text-2xl font-bold">{{ $uniformItem->availableStock() }}</dd></div>
                     <div><dt class="label">Stock total</dt><dd>{{ $uniformItem->total_quantity }}</dd></div>
                     <div><dt class="label">Atualmente atribuído</dt><dd>{{ $assignedQuantity }}</dd></div>
                     <div><dt class="label">Mínimo</dt><dd>{{ $uniformItem->minimum_quantity }}</dd></div>
                 </dl>
+                <div class="mt-5 space-y-2">
+                    @foreach ($uniformItem->sizes as $size)
+                        <div class="flex items-center justify-between rounded-xl bg-slate-100 px-3 py-2 text-sm">
+                            <span class="font-semibold">{{ $size->size }}</span>
+                            <span>{{ $size->stock }} disponiveis</span>
+                        </div>
+                    @endforeach
+                </div>
             </div>
 
             <div class="card xl:col-span-2">

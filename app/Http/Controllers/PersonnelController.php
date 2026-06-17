@@ -93,6 +93,11 @@ class PersonnelController extends Controller
             'rank' => ['nullable', 'string', 'max:100'],
             'status' => ['required', Rule::in(['ativo', 'inativo', 'suspenso'])],
             'joined_at' => ['nullable', 'date'],
+            'waist_cm' => ['nullable', 'integer', 'min:1', 'max:300'],
+            'chest_cm' => ['nullable', 'integer', 'min:1', 'max:300'],
+            'height_cm' => ['nullable', 'integer', 'min:1', 'max:250'],
+            'leg_cm' => ['nullable', 'integer', 'min:1', 'max:200'],
+            'arm_cm' => ['nullable', 'integer', 'min:1', 'max:200'],
             'notes' => ['nullable', 'string'],
         ]);
     }

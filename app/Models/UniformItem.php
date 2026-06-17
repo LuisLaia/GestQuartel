@@ -28,8 +28,22 @@ class UniformItem extends Model
         return $this->hasMany(UniformAssignment::class);
     }
 
+    public function sizes(): HasMany
+    {
+        return $this->hasMany(UniformItemSize::class);
+    }
+
+    public function availableStock(): int
+    {
+        if ($this->relationLoaded('sizes')) {
+            return (int) $this->sizes->sum('stock');
+        }
+
+        return (int) $this->sizes()->sum('stock');
+    }
+
     public function isLowStock(): bool
     {
-        return $this->available_quantity <= $this->minimum_quantity;
+        return $this->availableStock() <= $this->minimum_quantity;
     }
 }

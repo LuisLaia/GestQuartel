@@ -32,6 +32,31 @@
         <span class="label">Data de entrada</span>
         <input class="input" type="date" name="joined_at" value="{{ old('joined_at', optional($person->joined_at)->format('Y-m-d')) }}">
     </label>
+    <div class="md:col-span-2">
+        <p class="label">Medidas corporais</p>
+        <div class="grid gap-5 md:grid-cols-5">
+            <label class="block">
+                <span class="label">Cintura cm</span>
+                <input class="input" type="number" min="1" max="300" name="waist_cm" value="{{ old('waist_cm', $person->waist_cm) }}">
+            </label>
+            <label class="block">
+                <span class="label">Peito cm</span>
+                <input class="input" type="number" min="1" max="300" name="chest_cm" value="{{ old('chest_cm', $person->chest_cm) }}">
+            </label>
+            <label class="block">
+                <span class="label">Altura cm</span>
+                <input class="input" type="number" min="1" max="250" name="height_cm" value="{{ old('height_cm', $person->height_cm) }}">
+            </label>
+            <label class="block">
+                <span class="label">Perna cm</span>
+                <input class="input" type="number" min="1" max="200" name="leg_cm" value="{{ old('leg_cm', $person->leg_cm) }}">
+            </label>
+            <label class="block">
+                <span class="label">Braco cm</span>
+                <input class="input" type="number" min="1" max="200" name="arm_cm" value="{{ old('arm_cm', $person->arm_cm) }}">
+            </label>
+        </div>
+    </div>
     <label class="block md:col-span-2">
         <span class="label">Notas</span>
         <textarea class="input min-h-28" name="notes">{{ old('notes', $person->notes) }}</textarea>

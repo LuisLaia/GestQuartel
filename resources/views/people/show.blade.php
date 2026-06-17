@@ -26,6 +26,9 @@
                     <div><dt class="label">Email</dt><dd>{{ $person->email ?: '-' }}</dd></div>
                     <div><dt class="label">Telefone</dt><dd>{{ $person->phone ?: '-' }}</dd></div>
                     <div><dt class="label">Estado</dt><dd>{{ ucfirst($person->status) }}</dd></div>
+                    <div><dt class="label">Cintura</dt><dd>{{ $person->waist_cm ? $person->waist_cm . ' cm' : '-' }}</dd></div>
+                    <div><dt class="label">Peito</dt><dd>{{ $person->chest_cm ? $person->chest_cm . ' cm' : '-' }}</dd></div>
+                    <div><dt class="label">Altura</dt><dd>{{ $person->height_cm ? $person->height_cm . ' cm' : '-' }}</dd></div>
                 </dl>
 
                 <div class="mt-6 grid grid-cols-2 gap-3">
@@ -63,6 +66,7 @@
                 <thead>
                     <tr>
                         <th>Peça</th>
+                        <th>Tamanho</th>
                         <th>Quantidade</th>
                         <th>Data de atribuição</th>
                         <th>Data de devolução</th>
@@ -73,13 +77,14 @@
                     @forelse ($person->assignments as $assignment)
                         <tr>
                             <td>{{ $assignment->uniformItem?->name ?? 'Peça removida' }}</td>
+                            <td>{{ $assignment->chosen_size ?: $assignment->suggested_size ?: '-' }}</td>
                             <td>{{ $assignment->quantity }}</td>
                             <td>{{ $assignment->assigned_at->format('d/m/Y') }}</td>
                             <td>{{ $assignment->returned_at?->format('d/m/Y') ?: '-' }}</td>
                             <td><span class="badge {{ $assignment->returned_at ? 'muted' : '' }}">{{ $assignment->returned_at ? 'Devolvido' : 'Ativo' }}</span></td>
                         </tr>
                     @empty
-                        <tr><td colspan="5" class="empty">Sem histórico disponível.</td></tr>
+                        <tr><td colspan="6" class="empty">Sem histórico disponível.</td></tr>
                     @endforelse
                 </tbody>
             </table>

@@ -20,6 +20,11 @@ class Person extends Model
         'rank',
         'status',
         'joined_at',
+        'waist_cm',
+        'chest_cm',
+        'height_cm',
+        'leg_cm',
+        'arm_cm',
         'notes',
     ];
 
@@ -27,6 +32,11 @@ class Person extends Model
     {
         return [
             'joined_at' => 'date',
+            'waist_cm' => 'integer',
+            'chest_cm' => 'integer',
+            'height_cm' => 'integer',
+            'leg_cm' => 'integer',
+            'arm_cm' => 'integer',
         ];
     }
 

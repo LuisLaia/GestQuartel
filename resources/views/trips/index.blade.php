@@ -10,7 +10,8 @@
         @include('layouts.partials.flash')
 
         <div class="card">
-            <form class="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr_auto]" method="POST" action="{{ route('trips.sync') }}">
+            <form class="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr_auto]" method="POST" action="{{ route('trips.sync') }}"
+                onsubmit="this.querySelector('[type=submit]').disabled = true; this.querySelector('[type=submit]').textContent = 'A sincronizar...';">
                 @csrf
 
                 <div>
@@ -36,7 +37,7 @@
                 </div>
 
                 <div class="flex items-end">
-                    <button class="btn-primary w-full lg:w-auto" type="submit">
+                    <button class="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-70 lg:w-auto" type="submit">
                         Sincronizar Cartrack
                     </button>
                 </div>
