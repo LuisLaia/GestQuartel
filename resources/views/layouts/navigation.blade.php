@@ -1,6 +1,6 @@
 <nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
 
-    <div>
+    <div class="w-full px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
 
             <!-- LEFT -->
@@ -30,6 +30,10 @@
 
                     <x-nav-link :href="route('vehicles.index')" :active="request()->routeIs('vehicles.*')">
                         Veículos
+                    </x-nav-link>
+
+                    <x-nav-link :href="route('trips.index')" :active="request()->routeIs('trips.*')">
+                        Viagens
                     </x-nav-link>
 
                 </div>
@@ -72,12 +76,13 @@
                     </x-slot>
 
                 </x-dropdown>
+
             </div>
 
             <!-- MOBILE BUTTON -->
             <div class="-me-2 flex items-center sm:hidden">
                 <button @click="open = ! open"
-                    class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md">
+                    class="rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open}" class="inline-flex" stroke="currentColor" stroke-width="2"
                             d="M4 6h16M4 12h16M4 18h16" />
@@ -111,16 +116,21 @@
                 Veículos
             </x-responsive-nav-link>
 
+            <x-responsive-nav-link :href="route('trips.index')" :active="request()->routeIs('trips.*')">
+                Viagens
+            </x-responsive-nav-link>
+
         </div>
 
         <!-- USER -->
-        <div class="pt-4 pb-1 border-t border-gray-200">
+        <div class="border-t border-gray-200 pb-1 pt-4">
             <div class="px-4">
                 <div class="text-base font-medium text-gray-800">{{ Auth::user()->name }}</div>
                 <div class="text-sm text-gray-500">{{ Auth::user()->email }}</div>
             </div>
 
             <div class="mt-3 space-y-1">
+
 
                 <x-responsive-nav-link :href="route('profile.show')">
                     Ver Perfil

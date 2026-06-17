@@ -26,6 +26,20 @@
                     <div><dt class="label">Tipo</dt><dd>{{ $vehicle->type ?: '-' }}</dd></div>
                     <div><dt class="label">Ano</dt><dd>{{ $vehicle->year ?: '-' }}</dd></div>
                     <div><dt class="label">Estado</dt><dd>{{ ucfirst($vehicle->status) }}</dd></div>
+                    <div>
+                        <dt class="label">Total km</dt>
+                        <dd>{{ number_format((float) $vehicle->total_km, 0, ',', ' ') }} km</dd>
+                    </div>
+                    <div>
+                        <dt class="label">Consumo médio</dt>
+                        <dd>
+                            @if ($vehicle->average_consumption !== null)
+                                {{ number_format((float) $vehicle->average_consumption, 2, ',', ' ') }} L/100km
+                            @else
+                                -
+                            @endif
+                        </dd>
+                    </div>
                 </dl>
             </div>
 

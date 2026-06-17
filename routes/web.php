@@ -13,6 +13,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExternalDataController;
 use App\Http\Controllers\PersonnelController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TripController;
 use App\Http\Controllers\UniformAssignmentController;
 use App\Http\Controllers\UniformItemController;
 use App\Http\Controllers\VehicleController;
@@ -91,6 +92,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/vehicles/{vehicle}/edit', [VehicleController::class, 'edit'])->name('vehicles.edit');
     Route::put('/vehicles/{vehicle}', [VehicleController::class, 'update'])->name('vehicles.update');
     Route::delete('/vehicles/{vehicle}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
+
+    Route::get('/trips', [TripController::class, 'index'])->name('trips.index');
+    Route::post('/trips', [TripController::class, 'store'])->name('trips.store');
+    Route::post('/trips/sync', [TripController::class, 'sync'])->name('trips.sync');
 
     Route::get('/external/firefighters', [ExternalDataController::class, 'firefighters'])
         ->name('external.firefighters');

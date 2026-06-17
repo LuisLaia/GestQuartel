@@ -92,5 +92,7 @@ class DatabaseSeeder extends Seeder
                 'year' => 2016,
             ]
         );
+
+        $this->call(TripSeeder::class);
     }
 }

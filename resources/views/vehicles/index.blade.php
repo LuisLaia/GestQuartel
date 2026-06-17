@@ -51,6 +51,8 @@
                         <th>Tipo</th>
                         <th>Ano</th>
                         <th>Estado</th>
+                        <th>Total km</th>
+                        <th>Consumo médio</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -69,6 +71,14 @@
                                     {{ ucfirst($vehicle->status) }}
                                 </span>
                             </td>
+                            <td>{{ number_format((float) $vehicle->total_km, 0, ',', ' ') }} km</td>
+                            <td>
+                                @if ($vehicle->average_consumption !== null)
+                                    {{ number_format((float) $vehicle->average_consumption, 2, ',', ' ') }} L/100km
+                                @else
+                                    -
+                                @endif
+                            </td>
                             <td class="text-right">
                                 <a href="{{ route('vehicles.show', $vehicle) }}" class="text-rose-600">
                                     Abrir
@@ -79,7 +89,7 @@
 
                     @if ($vehicles->isEmpty())
                         <tr>
-                            <td colspan="6" class="empty">
+                            <td colspan="8" class="empty">
                                 Sem veículos encontrados.
                             </td>
                         </tr>

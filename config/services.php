@@ -30,6 +30,12 @@ return [
         'token' => env('PREVENTECH_TOKEN'),
     ],
 
+    'cartrack' => [
+        'base_url' => env('CARTRACK_BASE_URL'),
+        'api_key' => env('CARTRACK_API_KEY'),
+        'token' => env('CARTRACK_TOKEN'),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),

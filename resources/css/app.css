@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+    [x-cloak] {
+        display: none !important;
+    }
+}
+
 /* componentes personalizados */
 @layer components {
 
@@ -38,7 +44,7 @@
     }
 
     .input {
-        @apply w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-red-500 focus:ring-4 focus:ring-red-100;
+        @apply w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-red-500 focus:ring-4 focus:ring-red-100;
     }
 
     .btn-primary {
@@ -84,4 +90,5 @@
     .empty {
         @apply py-8 text-center text-sm text-slate-500;
     }
+
 }
