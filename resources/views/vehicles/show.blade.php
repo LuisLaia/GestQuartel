@@ -20,6 +20,9 @@
         <section class="grid gap-6 xl:grid-cols-3">
             <div class="card xl:col-span-1">
                 <h3 class="section-title">Dados</h3>
+                @if (! $vehicle->type || ! $vehicle->year || $vehicle->total_km === null)
+                    <p class="mt-2 text-sm font-semibold text-amber-700">Dados incompletos</p>
+                @endif
                 <dl class="mt-4 space-y-3 text-sm">
                     <div><dt class="label">Nome</dt><dd>{{ $vehicle->name }}</dd></div>
                     <div><dt class="label">Matrícula</dt><dd>{{ $vehicle->plate ?: '-' }}</dd></div>

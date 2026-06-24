@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTripRequest;
+use App\Services\CartrackService;
 use App\Services\TripService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
@@ -12,12 +13,13 @@ use Illuminate\View\View;
 
 class TripController extends Controller
 {
-    public function index(Request $request, TripService $tripService): View
+    public function index(Request $request, TripService $tripService, CartrackService $cartrackService): View
     {
         $search = $request->string('search')->toString();
         $trips = $tripService->search($search);
+        $sandboxMode = $cartrackService->sandboxModeActive();
 
-        return view('trips.index', compact('trips', 'search'));
+        return view('trips.index', compact('trips', 'search', 'sandboxMode'));
     }
 
     public function store(StoreTripRequest $request, TripService $tripService): RedirectResponse
@@ -34,6 +36,28 @@ class TripController extends Controller
     }
 
     public function sync(Request $request, TripService $tripService): RedirectResponse
+    {
+        if (config('services.cartrack.mode', 'sandbox') === 'sandbox') {
+            return $this->generateFakeTrips($tripService);
+        }
+
+        return $this->syncRealTrips($request, $tripService);
+    }
+
+    private function generateFakeTrips(TripService $tripService): RedirectResponse
+    {
+        try {
+            $result = $tripService->generateTestTrips();
+        } catch (Exception $exception) {
+            Log::error('Cartrack sandbox generation error', ['message' => $exception->getMessage()]);
+
+            return back()->with('error', 'Erro ao gerar viagens simuladas.');
+        }
+
+        return back()->with('success', "{$result['synced']} viagem(ns) simulada(s) gerada(s) com sucesso.");
+    }
+
+    private function syncRealTrips(Request $request, TripService $tripService): RedirectResponse
     {
         $data = $request->validate([
             'start_date' => ['nullable', 'date'],

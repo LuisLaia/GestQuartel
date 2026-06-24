@@ -49,10 +49,24 @@ class TripService
             return ['synced' => 0, 'error' => $result['error']];
         }
 
+        return $this->storeTrips($result['data'], $startDate, $endDate);
+    }
+
+    public function generateTestTrips(): array
+    {
+        return $this->storeTrips(
+            $this->cartrackService->getSandboxTrips(),
+            now()->subDays(7)->toDateString(),
+            now()->toDateString()
+        );
+    }
+
+    private function storeTrips(array $trips, string $startDate, string $endDate): array
+    {
         $synced = 0;
         $skipped = 0;
 
-        foreach ($result['data'] as $item) {
+        foreach ($trips as $item) {
             $vehicle = $this->resolveOrCreateVehicle($item);
 
             if (! $vehicle) {
@@ -141,12 +155,8 @@ class TripService
             return $vehicle;
         }
 
-        if (! $name) {
-            return null;
-        }
-
         return Vehicle::firstOrCreate(
-            ['name' => $name],
+            ['name' => $name ?: "Viatura {$plate}"],
             [
                 'plate' => $plate ?: $this->randomPlate(),
                 'type' => 'Operacional',
@@ -158,17 +168,19 @@ class TripService
 
     private function fuelUsedFor(array $item, string $startDate, string $endDate): float
     {
-        $vehicleExternalId = $this->stringValue(
-            data_get($item, 'vehicle_external_id')
+        $registration = $this->stringValue(
+            data_get($item, 'registration')
+                ?? data_get($item, 'plate')
+                ?? data_get($item, 'vehicle_external_id')
                 ?? data_get($item, 'assetId')
                 ?? data_get($item, 'vehicle_id')
         );
 
-        if (! $vehicleExternalId) {
+        if (! $registration) {
             return 0;
         }
 
-        $result = $this->cartrackService->getFuelEstimate($vehicleExternalId, $startDate, $endDate);
+        $result = $this->cartrackService->getFuelEstimate($registration, $startDate, $endDate);
 
         if ($result['error']) {
             return 0;

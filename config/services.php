@@ -23,19 +23,21 @@ return [
     ],
 
     'preventech' => [
-        'base_url' => env('PREVENTECH_BASE_URL'),
+        'mode' => env('PREVENTECH_MODE', 'sandbox'),
+        'base_url' => env('PREVENTECH_BASE_URL', 'https://api.preventech.pt'),
+        'api_key' => env('PREVENTECH_API_KEY'),
         'email' => env('PREVENTECH_EMAIL'),
         'nif' => env('PREVENTECH_NIF'),
-        'api_key' => env('PREVENTECH_API_KEY'),
         'token' => env('PREVENTECH_TOKEN'),
     ],
 
     'cartrack' => [
-        'base_url' => env('CARTRACK_BASE_URL'),
-        'client_id' => env('CARTRACK_CLIENT_ID'),
-        'client_secret' => env('CARTRACK_CLIENT_SECRET'),
+        'mode' => env('CARTRACK_MODE', 'sandbox'),
+        'base_url' => env('CARTRACK_BASE_URL', 'https://fleetapi-au.cartrack.com/rest'),
         'username' => env('CARTRACK_USERNAME'),
         'password' => env('CARTRACK_PASSWORD'),
+        'client_id' => env('CARTRACK_CLIENT_ID'),
+        'client_secret' => env('CARTRACK_CLIENT_SECRET'),
         'token' => env('CARTRACK_TOKEN'),
     ],
 

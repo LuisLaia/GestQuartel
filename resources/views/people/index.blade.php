@@ -32,7 +32,12 @@
                 <tbody>
                     @forelse ($people as $person)
                         <tr>
-                            <td class="font-semibold">{{ $person->name }}</td>
+                            <td>
+                                <div class="font-semibold">{{ $person->name }}</div>
+                                @if (! ($person->mechanographic_number ?: $person->number) || ! $person->phone || ! $person->waist_cm || ! $person->chest_cm || ! $person->height_cm)
+                                    <div class="mt-1 text-xs font-semibold text-amber-700">Dados incompletos</div>
+                                @endif
+                            </td>
                             <td>{{ $person->mechanographic_number ?: $person->number ?: '-' }}</td>
                             <td>{{ $person->rank ?: '-' }}</td>
                             <td>{{ $person->phone ?: $person->email ?: '-' }}</td>

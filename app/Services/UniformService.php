@@ -71,7 +71,7 @@ class UniformService
             }
 
             $itemSize->decrement('stock', $data['quantity']);
-            $this->syncLegacyStock($itemSize->uniformItem);
+            $this->refreshLegacyStock($itemSize->uniformItem);
 
             return UniformAssignment::create($data);
         });
@@ -96,14 +96,14 @@ class UniformService
                 );
 
                 $itemSize->increment('stock', $assignment->quantity);
-                $this->syncLegacyStock($itemSize->uniformItem);
+                $this->refreshLegacyStock($itemSize->uniformItem);
             }
 
             $assignment->update(['returned_at' => now()->toDateString()]);
         });
     }
 
-    private function syncLegacyStock(UniformItem $item): void
+    private function refreshLegacyStock(UniformItem $item): void
     {
         $item->forceFill([
             'available_quantity' => $item->sizes()->sum('stock'),

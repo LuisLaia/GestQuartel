@@ -12,6 +12,7 @@ use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExternalDataController;
 use App\Http\Controllers\PersonnelController;
+use App\Http\Controllers\PreventechController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TripController;
 use App\Http\Controllers\UniformAssignmentController;
@@ -66,10 +67,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::post('/profile/sync/firefighters', [ExternalDataController::class, 'syncFirefighters'])
+    Route::post('/profile/sync/firefighters', [PreventechController::class, 'syncPersonnel'])
         ->name('profile.sync.firefighters');
-    Route::post('/profile/sync/vehicles', [ExternalDataController::class, 'syncVehicles'])
+    Route::post('/profile/sync/vehicles', [PreventechController::class, 'syncVehicles'])
         ->name('profile.sync.vehicles');
+
+    Route::post('/preventech/sync/personnel', [PreventechController::class, 'syncPersonnel'])
+        ->name('preventech.sync.personnel');
+    Route::post('/preventech/sync/vehicles', [PreventechController::class, 'syncVehicles'])
+        ->name('preventech.sync.vehicles');
 
     Route::resource('people', PersonnelController::class)
         ->names('personnel');

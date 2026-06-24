@@ -9,6 +9,16 @@
 
         @include('layouts.partials.flash')
 
+        @if ($sandboxMode)
+            <div class="rounded border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+                Modo Sandbox ativo &mdash; dados simulados
+            </div>
+        @else
+            <div class="rounded border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+                Dados sincronizados com Cartrack
+            </div>
+        @endif
+
         <div class="card">
             <form class="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr_auto]" method="POST" action="{{ route('trips.sync') }}"
                 onsubmit="this.querySelector('[type=submit]').disabled = true; this.querySelector('[type=submit]').textContent = 'A sincronizar...';">

@@ -60,7 +60,12 @@
                 <tbody>
                     @foreach ($vehicles as $vehicle)
                         <tr>
-                            <td>{{ $vehicle->name }}</td>
+                            <td>
+                                <div class="font-semibold">{{ $vehicle->name }}</div>
+                                @if (! $vehicle->type || ! $vehicle->year || $vehicle->total_km === null)
+                                    <div class="mt-1 text-xs font-semibold text-amber-700">Dados incompletos</div>
+                                @endif
+                            </td>
                             <td>{{ $vehicle->plate }}</td>
                             <td>{{ $vehicle->type }}</td>
                             <td>{{ $vehicle->year }}</td>

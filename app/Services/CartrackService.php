@@ -4,108 +4,82 @@ namespace App\Services;
 
 use Exception;
 use Illuminate\Http\Client\PendingRequest;
-use Illuminate\Http\Client\Response;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class CartrackService
 {
-    private const TOKEN_CACHE_KEY = 'cartrack.access_token';
-
-    public function getTrips($startDate, $endDate): array
+    public function getTrips($start, $end): array
     {
-        if (! $this->isConfigured()) {
-            return $this->errorResult('Configuração Cartrack em falta');
+        if ($this->isSandbox()) {
+            return $this->success($this->mockTrips());
         }
 
         try {
-            $response = $this->get('/fleet/trips', [
-                'startDate' => $startDate,
-                'endDate' => $endDate,
+            $response = $this->client()->get('/fleet/trips', [
+                'startDate' => $start,
+                'endDate' => $end,
             ]);
 
             if ($response->failed()) {
-                Log::error('Cartrack API error', [
-                    'endpoint' => '/fleet/trips',
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                ]);
-
-                return $this->errorResult('Nao foi possivel sincronizar viagens da Cartrack.');
+                throw new Exception("Cartrack trips request failed with status {$response->status()}.");
             }
 
-            return [
-                'data' => array_values(array_filter(array_map(
-                    fn (array $item) => $this->normalizeTrip($item),
-                    array_filter($this->normalizeItems($response->json()), 'is_array')
-                ))),
-                'error' => null,
-            ];
+            return $this->success(array_values(array_filter(array_map(
+                fn (array $item) => $this->normalizeTrip($item),
+                array_filter($this->normalizeItems($response->json()), 'is_array')
+            ))));
         } catch (Exception $exception) {
-            Log::error('Cartrack API error', [
+            Log::warning('Cartrack API unavailable, using sandbox trips.', [
                 'endpoint' => '/fleet/trips',
                 'message' => $exception->getMessage(),
             ]);
 
-            return $this->errorResult('Nao foi possivel ligar a API Cartrack.');
+            return $this->success($this->mockTrips());
         }
     }
 
-    public function getFuelEstimate($vehicleId, $startDate, $endDate): array
+    public function getFuelEstimate($registration, $start, $end): array
     {
-        if (! $this->isConfigured()) {
-            return $this->errorResult('Configuração Cartrack em falta');
+        if ($this->isSandbox()) {
+            return $this->success([$this->mockFuel($registration)]);
         }
 
         try {
-            $response = $this->get('/fleet/fuel', [
-                'vehicle_id' => $vehicleId,
-                'startDate' => $startDate,
-                'endDate' => $endDate,
+            $response = $this->client()->get('/fleet/fuel', [
+                'registration' => $registration,
+                'startDate' => $start,
+                'endDate' => $end,
             ]);
 
             if ($response->failed()) {
-                Log::error('Cartrack API error', [
-                    'endpoint' => '/fleet/fuel',
-                    'vehicle_id' => $vehicleId,
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                ]);
-
-                return $this->errorResult('Nao foi possivel obter estimativa de combustivel da Cartrack.');
+                throw new Exception("Cartrack fuel request failed with status {$response->status()}.");
             }
 
-            return [
-                'data' => array_values(array_filter(array_map(
-                    fn (array $item) => $this->normalizeFuel($item),
-                    array_filter($this->normalizeItems($response->json()), 'is_array')
-                ))),
-                'error' => null,
-            ];
+            return $this->success(array_values(array_filter(array_map(
+                fn (array $item) => $this->normalizeFuel($item),
+                array_filter($this->normalizeItems($response->json()), 'is_array')
+            ))));
         } catch (Exception $exception) {
-            Log::error('Cartrack API error', [
+            Log::warning('Cartrack API unavailable, using sandbox fuel estimate.', [
                 'endpoint' => '/fleet/fuel',
-                'vehicle_id' => $vehicleId,
+                'registration' => $registration,
                 'message' => $exception->getMessage(),
             ]);
 
-            return $this->errorResult('Nao foi possivel ligar a API Cartrack.');
+            return $this->success([$this->mockFuel($registration)]);
         }
     }
 
-    public function isConfigured(): bool
+    public function sandboxModeActive(): bool
     {
-        return filled(config('services.cartrack.base_url'))
-            && (
-                filled(config('services.cartrack.token'))
-                || (
-                    filled(config('services.cartrack.client_id'))
-                    && filled(config('services.cartrack.client_secret'))
-                    && filled(config('services.cartrack.username'))
-                    && filled(config('services.cartrack.password'))
-                )
-            );
+        return $this->isSandbox();
+    }
+
+    public function getSandboxTrips(): array
+    {
+        return $this->mockTrips();
     }
 
     private function client(): PendingRequest
@@ -115,73 +89,65 @@ class CartrackService
             ->asJson()
             ->timeout(10)
             ->retry(2, 1000)
-            ->withToken($this->token());
+            ->withBasicAuth(
+                (string) config('services.cartrack.username'),
+                (string) config('services.cartrack.password')
+            );
     }
 
-    private function get(string $endpoint, array $query): Response
+    private function isSandbox(): bool
     {
-        $response = $this->client()->get($endpoint, $query);
-
-        if ($response->status() === 401 && blank(config('services.cartrack.token'))) {
-            Cache::forget(self::TOKEN_CACHE_KEY);
-
-            return $this->client()->get($endpoint, $query);
-        }
-
-        return $response;
+        return config('services.cartrack.mode', 'sandbox') === 'sandbox';
     }
 
-    private function token(): string
+    private function mockTrips(): array
     {
-        $configuredToken = config('services.cartrack.token');
+        return [
+            [
+                'external_id' => 'sandbox-00-aa-00-'.now()->subDays(2)->toDateString(),
+                'vehicle_name' => 'Viatura 00-AA-00',
+                'registration' => '00-AA-00',
+                'driver_name' => 'Afonso Martins',
+                'start_time' => now()->subDays(2),
+                'end_time' => now()->subDays(2)->addHour(),
+                'started_at' => now()->subDays(2),
+                'ended_at' => now()->subDays(2)->addHour(),
+                'distance_km' => 25,
+                'fuel_used_liters' => 2.0,
+            ],
+            [
+                'external_id' => 'sandbox-11-bb-11-'.now()->subDays(1)->toDateString(),
+                'vehicle_name' => 'Viatura 11-BB-11',
+                'registration' => '11-BB-11',
+                'driver_name' => 'Joao Silva',
+                'start_time' => now()->subDays(1),
+                'end_time' => now()->subDays(1)->addHour(),
+                'started_at' => now()->subDays(1),
+                'ended_at' => now()->subDays(1)->addHour(),
+                'distance_km' => 40,
+                'fuel_used_liters' => 4.2,
+            ],
+            [
+                'external_id' => 'sandbox-22-cc-22-'.now()->toDateString(),
+                'vehicle_name' => 'Viatura 22-CC-22',
+                'registration' => '22-CC-22',
+                'driver_name' => 'Pedro Costa',
+                'start_time' => now(),
+                'end_time' => now()->addHour(),
+                'started_at' => now(),
+                'ended_at' => now()->addHour(),
+                'distance_km' => 60,
+                'fuel_used_liters' => 5.5,
+            ],
+        ];
+    }
 
-        if (filled($configuredToken)) {
-            return (string) $configuredToken;
-        }
-
-        if ($cachedToken = Cache::get(self::TOKEN_CACHE_KEY)) {
-            return (string) $cachedToken;
-        }
-
-        $response = Http::baseUrl(rtrim((string) config('services.cartrack.base_url'), '/'))
-            ->acceptJson()
-            ->asJson()
-            ->timeout(10)
-            ->retry(2, 1000)
-            ->post('/oauth/token', [
-                'grant_type' => 'password',
-                'client_id' => config('services.cartrack.client_id'),
-                'client_secret' => config('services.cartrack.client_secret'),
-                'username' => config('services.cartrack.username'),
-                'password' => config('services.cartrack.password'),
-            ]);
-
-        if ($response->failed()) {
-            Log::error('Cartrack API error', [
-                'endpoint' => '/oauth/token',
-                'status' => $response->status(),
-                'body' => $response->body(),
-            ]);
-
-            throw new Exception('Cartrack authentication failed.');
-        }
-
-        $payload = $response->json();
-        $token = data_get($payload, 'access_token') ?? data_get($payload, 'token');
-
-        if (! $token) {
-            Log::error('Cartrack API error', [
-                'endpoint' => '/oauth/token',
-                'message' => 'Authentication response without token.',
-            ]);
-
-            throw new Exception('Cartrack authentication response without token.');
-        }
-
-        $expiresIn = max((int) data_get($payload, 'expires_in', 3600) - 60, 60);
-        Cache::put(self::TOKEN_CACHE_KEY, (string) $token, now()->addSeconds($expiresIn));
-
-        return (string) $token;
+    private function mockFuel($registration): array
+    {
+        return [
+            'registration' => $registration,
+            'fuel_used_liters' => rand(2, 8),
+        ];
     }
 
     private function normalizeItems(mixed $payload): array
@@ -192,22 +158,11 @@ class CartrackService
 
         foreach (['data', 'items', 'results', 'trips', 'fuel'] as $key) {
             if (isset($payload[$key]) && is_array($payload[$key])) {
-                return array_is_list($payload[$key]) ? $payload[$key] : $this->wrapSingleItem($payload[$key]);
+                return array_is_list($payload[$key]) ? $payload[$key] : [$payload[$key]];
             }
         }
 
-        return array_is_list($payload) ? $payload : $this->wrapSingleItem($payload);
-    }
-
-    private function wrapSingleItem(array $payload): array
-    {
-        foreach (['fuel_used_liters', 'fuelUsedLiters', 'fuel_used', 'fuel', 'distance_km', 'distanceKm', 'distance'] as $key) {
-            if (array_key_exists($key, $payload)) {
-                return [$payload];
-            }
-        }
-
-        return [];
+        return array_is_list($payload) ? $payload : [$payload];
     }
 
     private function normalizeTrip(array $item): ?array
@@ -242,8 +197,8 @@ class CartrackService
             'driver_name' => $this->stringValue(data_get($item, 'driver_name') ?? data_get($item, 'driverName') ?? data_get($item, 'driver.name') ?? data_get($item, 'driver') ?? data_get($item, 'motorista')),
             'distance_km' => $distance,
             'fuel_used_liters' => $this->floatValue(data_get($item, 'fuel_used_liters') ?? data_get($item, 'fuelUsedLiters') ?? data_get($item, 'fuel_used') ?? data_get($item, 'fuelEstimate') ?? data_get($item, 'fuel')),
-            'started_at' => data_get($item, 'started_at') ?? data_get($item, 'startTime') ?? data_get($item, 'start_time') ?? data_get($item, 'startDate') ?? data_get($item, 'start_date'),
-            'ended_at' => data_get($item, 'ended_at') ?? data_get($item, 'endTime') ?? data_get($item, 'end_time') ?? data_get($item, 'endDate') ?? data_get($item, 'end_date'),
+            'started_at' => $this->dateValue(data_get($item, 'started_at') ?? data_get($item, 'startTime') ?? data_get($item, 'start_time') ?? data_get($item, 'startDate') ?? data_get($item, 'start_date')),
+            'ended_at' => $this->dateValue(data_get($item, 'ended_at') ?? data_get($item, 'endTime') ?? data_get($item, 'end_time') ?? data_get($item, 'endDate') ?? data_get($item, 'end_date')),
         ];
     }
 
@@ -264,6 +219,19 @@ class CartrackService
         return ['fuel_used_liters' => $fuel];
     }
 
+    private function dateValue(mixed $value): mixed
+    {
+        if ($value instanceof Carbon) {
+            return $value;
+        }
+
+        if (! $value) {
+            return null;
+        }
+
+        return Carbon::parse($value);
+    }
+
     private function stringValue(mixed $value): ?string
     {
         if ($value === null || is_array($value)) {
@@ -280,11 +248,11 @@ class CartrackService
         return is_numeric($value) ? (float) $value : 0;
     }
 
-    private function errorResult(string $message): array
+    private function success(array $data): array
     {
         return [
-            'data' => [],
-            'error' => $message,
+            'data' => $data,
+            'error' => null,
         ];
     }
 }

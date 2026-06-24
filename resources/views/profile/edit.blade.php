@@ -26,35 +26,41 @@
             </div>
 
             <div class="mt-10 bg-white p-6 rounded-xl shadow">
-                <h3 class="text-lg font-semibold mb-4">Integrações</h3>
+                <h3 class="text-lg font-semibold mb-4">Integracoes</h3>
 
                 <p class="text-sm text-gray-500 mb-4">
-                    Sincronização com sistema externo Preventech.
+                    Sincronizacao com sistema externo Preventech.
                 </p>
+
+                @if (config('services.preventech.mode', 'sandbox') === 'sandbox')
+                    <div class="mb-5 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+                        Modo Sandbox Preventech ativo &mdash; dados simulados
+                    </div>
+                @endif
 
                 <div class="mb-5 rounded-lg bg-slate-50 p-4 text-sm text-slate-600">
                     <p>
-                        <strong>Última sincronização:</strong>
-                        {{ session('last_sync_at', 'Sem sincronização registada.') }}
+                        <strong>Ultima sincronizacao:</strong>
+                        {{ session('last_sync_at', 'Sem sincronizacao registada.') }}
                     </p>
                     <p class="mt-1">
                         <strong>Resultado:</strong>
-                        {{ session('last_sync_result', 'Sem resultado disponível.') }}
+                        {{ session('last_sync_result', 'Sem resultado disponivel.') }}
                     </p>
                 </div>
 
-                <div class="flex gap-4">
-                    <form method="POST" action="{{ route('profile.sync.firefighters') }}">
+                <div class="flex flex-wrap gap-4">
+                    <form method="POST" action="{{ route('preventech.sync.personnel') }}">
                         @csrf
-                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg">
-                            Sincronizar Bombeiros
+                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg" type="submit">
+                            Sincronizar Pessoal
                         </button>
                     </form>
 
-                    <form method="POST" action="{{ route('profile.sync.vehicles') }}">
+                    <form method="POST" action="{{ route('preventech.sync.vehicles') }}">
                         @csrf
-                        <button class="bg-green-600 text-white px-4 py-2 rounded-lg">
-                            Sincronizar Veículos
+                        <button class="bg-green-600 text-white px-4 py-2 rounded-lg" type="submit">
+                            Sincronizar Veiculos
                         </button>
                     </form>
                 </div>
